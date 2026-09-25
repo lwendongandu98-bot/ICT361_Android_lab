@@ -1,0 +1,12 @@
+# Android Studio / IntelliJ IDE files
+.idea/
+*.iml
+
+# Build and Gradle output files
+.gradle/
+build/
+**/build/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
