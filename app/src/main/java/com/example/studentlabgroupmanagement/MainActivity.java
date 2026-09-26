@@ -63,8 +63,11 @@ public class MainActivity extends AppCompatActivity {
 
                     // Route user to correct dashboard view (Will create these activities next)
                     if (role.equals("Student")) {
-                        // startActivity(new Intent(MainActivity.this, StudentHomeActivity.class));
-                    } else {
+                        Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
+                        startActivity(intent);
+                        finish(); // Closes the login activity so the back button doesn't return here
+                    }
+                    else {
                         // startActivity(new Intent(MainActivity.this, LecturerHomeActivity.class));
                     }
                 } else {

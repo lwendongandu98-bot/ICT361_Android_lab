@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -79,12 +78,13 @@
             android:id="@+id/tvBackToLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Already have an account? Login"
+            android:text="Already have an account? Go Back to Login"
             android:textColor="#1976D2"
+            android:textStyle="bold"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:padding="8dp" />
+            android:padding="12dp"
+            android:minHeight="48dp" />
 
     </LinearLayout>
-
 </ScrollView>

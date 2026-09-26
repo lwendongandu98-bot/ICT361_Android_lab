@@ -1,3 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">StudentLabGroupManagement</string>
+
+    <string name="app_name">Student Lab Group Management</string>
+
+    <string name="welcome_student">Welcome, Student!</string>
+    <string name="logout">Logout</string>
+
+    <string name="username">Username: -</string>
+    <string name="program">Program: -</string>
+
+    <string name="assigned_lab_group_status">Your Assigned Lab Group Status:</string>
+
+    <string name="not_assigned_group">Not Assigned to Any Group</string>
+
+    <string name="browse_join_groups">Browse and Join Lab Groups</string>
+
 </resources>

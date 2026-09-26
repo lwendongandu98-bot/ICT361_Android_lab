@@ -20,10 +20,10 @@ public class StudentRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_register);
 
-        // Initialize our database access tool
+        // Initialize our local SQLite database tool
         dbHelper = new DatabaseHelper(this);
 
-        // Map visual XML components to Java objects
+        // Map visual XML elements from layout to Java objects
         etRegUsername = findViewById(R.id.etRegUsername);
         etRegName = findViewById(R.id.etRegName);
         etRegStudentNum = findViewById(R.id.etRegStudentNum);
@@ -32,7 +32,7 @@ public class StudentRegisterActivity extends AppCompatActivity {
         btnRegisterSubmit = findViewById(R.id.btnRegisterSubmit);
         tvBackToLogin = findViewById(R.id.tvBackToLogin);
 
-        // Capture data and insert into the database when clicked
+        // Capture user input and process account creation
         btnRegisterSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,27 +48,26 @@ public class StudentRegisterActivity extends AppCompatActivity {
                     return;
                 }
 
-                // 2. Data Validation: Ensure password length requirements match system security rules
+                // 2. Data Validation: Ensure password matches baseline character security length rules
                 if (password.length() < 4) {
                     Toast.makeText(StudentRegisterActivity.this, "Password must be at least 4 characters long", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // 3. Attempt database insertion
-                // Newly created students don't have a lab group assignment yet, so we pass "None"
+                // 3. Attempt local database insertion (Default assigned lab group is "None")
                 boolean success = dbHelper.insertStudent(username, name, studentNum, password, program, "None");
 
                 if (success) {
                     Toast.makeText(StudentRegisterActivity.this, "Account Created Successfully!", Toast.LENGTH_LONG).show();
-                    finish(); // Automatically closes this screen and drops back to the login menu layout
+                    finish(); // Drops the user right back to the Login window automatically
                 } else {
-                    // Accounts for 'Account Already Exists' handling rules
+                    // Triggers if username primary key conflict occurs in SQLite
                     Toast.makeText(StudentRegisterActivity.this, "Username already exists! Try a different one.", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
-        // Simply close this screen if they decide they want to return back to the login screen
+        // Wires up the updated back text navigation link to close this window immediately
         tvBackToLogin.setOnClickListener(v -> finish());
     }
 }
