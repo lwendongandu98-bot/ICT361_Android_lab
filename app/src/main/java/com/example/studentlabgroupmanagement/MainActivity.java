@@ -74,12 +74,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Redirect user to the Account Registration process screen
+        // Redirect user to the Account Registration process screen
         tvRegisterLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // We will hook this up to the registration activity next
-                Toast.makeText(MainActivity.this, "Opening Registration...", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, StudentRegisterActivity.class));
             }
         });
+
     }
 }
