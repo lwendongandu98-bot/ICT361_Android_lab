@@ -65,8 +65,9 @@ public class MainActivity extends AppCompatActivity {
                     if (role.equals("Student")) {
                         Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
                         startActivity(intent);
-                        finish(); // Closes the login activity so the back button doesn't return here
+                        finish(); // Closes the login page out of memory so back button won't return here
                     }
+
                     else {
                         // startActivity(new Intent(MainActivity.this, LecturerHomeActivity.class));
                     }

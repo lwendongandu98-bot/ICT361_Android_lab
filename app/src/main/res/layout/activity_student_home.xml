@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,35 +12,29 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp">
 
-        <!-- Welcome Message -->
         <TextView
             android:id="@+id/tvWelcomeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/welcome_student"
+            android:text="Welcome, Student!"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="#0D47A1"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true" />
+            android:textColor="#0D47A1" />
 
-        <!-- Logout Button -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/logout"
+            android:text="Logout"
             android:textSize="12sp"
             android:backgroundTint="#D32F2F"
             android:textColor="#FFFFFF"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_centerInParent="true"
             android:minHeight="36dp" />
-
     </RelativeLayout>
 
-
-    <!-- Student Information Card -->
+    <!-- Student Info Display Card -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,40 +44,35 @@
         android:elevation="4dp"
         android:layout_marginBottom="24dp">
 
-        <!-- Username -->
         <TextView
             android:id="@+id/tvProfileUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/username"
+            android:text="Username: -"
             android:textSize="16sp"
             android:textColor="#333333"
             android:layout_marginBottom="8dp" />
 
-        <!-- Program -->
         <TextView
             android:id="@+id/tvProfileProgram"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/program"
+            android:text="Program: -"
             android:textSize="16sp"
             android:textColor="#333333" />
-
     </LinearLayout>
 
-
-    <!-- Lab Group Status Label -->
+    <!-- Lab Group Status Display Label -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/assigned_lab_group_status"
+        android:text="Your Assigned Lab Group Status:"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#666666"
         android:layout_marginBottom="8dp" />
 
-
-    <!-- Lab Group Status Box -->
+    <!-- Group Status Box Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -98,20 +86,18 @@
             android:id="@+id/tvCurrentGroupStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/not_assigned_group"
+            android:text="Not Assigned to Any Group"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#1565C0" />
-
     </LinearLayout>
 
-
-    <!-- Browse Groups Button -->
+    <!-- Browse Groups Navigation Action Trigger Element -->
     <Button
         android:id="@+id/btnViewAvailableGroups"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/browse_join_groups"
+        android:text="Browse and Join Lab Groups"
         android:backgroundTint="#1976D2"
         android:textColor="#FFFFFF"
         android:minHeight="48dp"

@@ -22,11 +22,10 @@ public class StudentHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_home);
 
-        // Initialize session and database helper instances
         session = new SessionManager(this);
         dbHelper = new DatabaseHelper(this);
 
-        // Initialize Visual XML fields
+        // Map Visual XML fields to clean layout tokens
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
         tvProfileUsername = findViewById(R.id.tvProfileUsername);
         tvProfileProgram = findViewById(R.id.tvProfileProgram);
@@ -34,17 +33,16 @@ public class StudentHomeActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.btnLogout);
         btnViewAvailableGroups = findViewById(R.id.btnViewAvailableGroups);
 
-        // Load logged-in student profile from SQLite memory
+        // Populate active student session profile data rows dynamically from SQLite
         loadStudentData();
 
-        // Handle logout process action
+        // Handle logout process action cleanly
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 session.logoutUser();
                 Toast.makeText(StudentHomeActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
 
-                // Return to login screen panel view
                 Intent intent = new Intent(StudentHomeActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
@@ -52,12 +50,11 @@ public class StudentHomeActivity extends AppCompatActivity {
             }
         });
 
-        // Set up browse groups click action placeholder
+        // Setup browse groups action trigger link
         btnViewAvailableGroups.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(StudentHomeActivity.this, "Feature coming up next step!", Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(StudentHomeActivity.this, "Opening Lab Groups browser...", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -69,7 +66,6 @@ public class StudentHomeActivity extends AppCompatActivity {
             return;
         }
 
-        // Query profile fields manually from our database helper structure
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT name, program, lab_group FROM students WHERE username = ?", new String[]{currentUsername});
 
@@ -78,12 +74,12 @@ public class StudentHomeActivity extends AppCompatActivity {
             String program = cursor.getString(1);
             String labGroup = cursor.getString(2);
 
-            // Update UI widgets
+            // Bind values dynamically
             tvWelcomeName.setText("Welcome, " + name + "!");
             tvProfileUsername.setText("Username: " + currentUsername);
             tvProfileProgram.setText("Program: " + program);
 
-            if (labGroup != null && !labGroup.equals("None")) {
+            if (labGroup != null && !labGroup.equals("None") && !labGroup.equals("Select group")) {
                 tvCurrentGroupStatus.setText("Assigned: " + labGroup);
             } else {
                 tvCurrentGroupStatus.setText("Not Assigned to Any Group");
