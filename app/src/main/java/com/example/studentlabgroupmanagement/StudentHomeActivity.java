@@ -1,90 +1,152 @@
 package com.example.studentlabgroupmanagement;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ImageButton;
 import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.navigation.NavigationView;
 
 public class StudentHomeActivity extends AppCompatActivity {
 
-    private TextView tvWelcomeName, tvProfileUsername, tvProfileProgram, tvCurrentGroupStatus;
-    private Button btnLogout, btnViewAvailableGroups;
-    private SessionManager session;
-    private DatabaseHelper dbHelper;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private ImageButton menuButton;
+
+    private CardView cardMyGroups;
+    private CardView cardTimetable;
+    private CardView cardProfile;
+    private CardView cardTasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_home);
 
-        session = new SessionManager(this);
-        dbHelper = new DatabaseHelper(this);
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+        menuButton = findViewById(R.id.menuButton);
 
-        // Map Visual XML fields to clean layout tokens
-        tvWelcomeName = findViewById(R.id.tvWelcomeName);
-        tvProfileUsername = findViewById(R.id.tvProfileUsername);
-        tvProfileProgram = findViewById(R.id.tvProfileProgram);
-        tvCurrentGroupStatus = findViewById(R.id.tvCurrentGroupStatus);
-        btnLogout = findViewById(R.id.btnLogout);
-        btnViewAvailableGroups = findViewById(R.id.btnViewAvailableGroups);
+        cardMyGroups = findViewById(R.id.cardMyGroups);
+        cardTimetable = findViewById(R.id.cardTimetable);
+        cardProfile = findViewById(R.id.cardProfile);
+        cardTasks = findViewById(R.id.cardTasks);
 
-        // Populate active student session profile data rows dynamically from SQLite
-        loadStudentData();
+        menuButton.setOnClickListener(v ->
+                drawerLayout.openDrawer(GravityCompat.START));
 
-        // Handle logout process action cleanly
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                session.logoutUser();
-                Toast.makeText(StudentHomeActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+        setupDashboardClickListeners();
 
-                Intent intent = new Intent(StudentHomeActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
+        navigationView.setNavigationItemSelectedListener(item -> {
+
+            int id = item.getItemId();
+
+            if (id == R.id.nav_home) {
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+
+            } else if (id == R.id.nav_profile) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        StudentProfileActivity.class));
+
+            } else if (id == R.id.nav_groups) {
+
+                Toast.makeText(
+                        StudentHomeActivity.this,
+                        "Opening Groups...",
+                        Toast.LENGTH_SHORT).show();
+
+            } else if (id == R.id.nav_timetable) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        TimetableActivity.class));
+
+            } else if (id == R.id.nav_tasks) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        TasksActivity.class));
+
+            } else if (id == R.id.nav_notifications) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        NotificationActivity.class));
+
+            } else if (id == R.id.nav_settings) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        SettingsActivity.class));
+
+            } else if (id == R.id.nav_logout) {
+
+                performLogout();
             }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
 
-        // Setup browse groups action trigger link
-        btnViewAvailableGroups.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(StudentHomeActivity.this, "Opening Lab Groups browser...", Toast.LENGTH_SHORT).show();
-            }
-        });
+        getOnBackPressedDispatcher().addCallback(
+                this,
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+
+                        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                            drawerLayout.closeDrawer(GravityCompat.START);
+                        } else {
+                            finish();
+                        }
+                    }
+                });
     }
 
-    private void loadStudentData() {
-        String currentUsername = session.getUsername();
-        if (currentUsername == null) {
-            finish();
-            return;
-        }
+    private void setupDashboardClickListeners() {
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT name, program, lab_group FROM students WHERE username = ?", new String[]{currentUsername});
+        cardMyGroups.setOnClickListener(v ->
+                Toast.makeText(
+                        StudentHomeActivity.this,
+                        "Opening Groups...",
+                        Toast.LENGTH_SHORT).show());
 
-        if (cursor.moveToFirst()) {
-            String name = cursor.getString(0);
-            String program = cursor.getString(1);
-            String labGroup = cursor.getString(2);
+        cardTimetable.setOnClickListener(v ->
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        TimetableActivity.class)));
 
-            // Bind values dynamically
-            tvWelcomeName.setText("Welcome, " + name + "!");
-            tvProfileUsername.setText("Username: " + currentUsername);
-            tvProfileProgram.setText("Program: " + program);
+        cardProfile.setOnClickListener(v ->
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        StudentProfileActivity.class)));
 
-            if (labGroup != null && !labGroup.equals("None") && !labGroup.equals("Select group")) {
-                tvCurrentGroupStatus.setText("Assigned: " + labGroup);
-            } else {
-                tvCurrentGroupStatus.setText("Not Assigned to Any Group");
-            }
-        }
-        cursor.close();
+        cardTasks.setOnClickListener(v ->
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        TasksActivity.class)));
+    }
+
+    private void performLogout() {
+
+        Intent intent = new Intent(
+                StudentHomeActivity.this,
+                MainActivity.class);
+
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+        finish();
     }
 }

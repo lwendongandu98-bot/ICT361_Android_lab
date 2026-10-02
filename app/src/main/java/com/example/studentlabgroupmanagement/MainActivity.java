@@ -9,6 +9,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup rgRole;
     private Button btnLogin;
     private TextView tvRegisterLink;
+    private TextView tvForgotPassword;
+
     private DatabaseHelper dbHelper;
     private SessionManager session;
 
@@ -25,66 +28,116 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize helper tools
         dbHelper = new DatabaseHelper(this);
         session = new SessionManager(this);
 
-        // Link visual elements from activity_main.xml
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         rgRole = findViewById(R.id.rgRole);
         btnLogin = findViewById(R.id.btnLogin);
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
-        // Handle Login button action
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 String username = etUsername.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
 
                 int selectedId = rgRole.getCheckedRadioButtonId();
+
+                if (selectedId == -1) {
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Please select Student",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    return;
+                }
+
                 RadioButton rbSelected = findViewById(selectedId);
                 String role = rbSelected.getText().toString();
 
                 if (username.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Please fill all fields",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
                     return;
                 }
 
-                // Check user data against database helper tables
-                boolean isValid = dbHelper.checkUserLogin(username, password, role);
+                boolean isValid =
+                        dbHelper.checkUserLogin(
+                                username,
+                                password,
+                                role
+                        );
 
                 if (isValid) {
-                    // Save info to shared memory session
-                    session.createLoginSession(username, role);
 
-                    Toast.makeText(MainActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
+                    session.createLoginSession(
+                            username,
+                            role
+                    );
 
-                    // Route user to correct dashboard view (Will create these activities next)
-                    if (role.equals("Student")) {
-                        Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
-                        startActivity(intent);
-                        finish(); // Closes the login page out of memory so back button won't return here
-                    }
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Login Successful!",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
-                    else {
-                        // startActivity(new Intent(MainActivity.this, LecturerHomeActivity.class));
-                    }
+                    Intent intent =
+                            new Intent(
+                                    MainActivity.this,
+                                    StudentHomeActivity.class
+                            );
+
+                    startActivity(intent);
+                    finish();
+
                 } else {
-                    Toast.makeText(MainActivity.this, "Invalid credentials or role!", Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Invalid credentials!",
+                            Toast.LENGTH_SHORT
+                    ).show();
                 }
             }
         });
 
-        // Redirect user to the Account Registration process screen
-        // Redirect user to the Account Registration process screen
-        tvRegisterLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, StudentRegisterActivity.class));
-            }
-        });
+        tvForgotPassword.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        ForgotPasswordActivity.class
+                                )
+                        );
+                    }
+                }
+        );
+
+        tvRegisterLink.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        StudentRegisterActivity.class
+                                )
+                        );
+                    }
+                }
+        );
     }
 }

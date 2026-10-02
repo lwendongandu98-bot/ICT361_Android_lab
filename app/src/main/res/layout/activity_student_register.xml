@@ -84,6 +84,25 @@
             android:paddingLeft="12dp"
             android:layout_marginBottom="16dp"/>
 
+        <!-- Recovery Email (NEW FIELD FOR PASSWORD RECOVERY) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email Address (For Password Recovery)"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/etRegEmail"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Enter email address"
+            android:inputType="textEmailAddress"
+            android:background="@android:drawable/editbox_background_normal"
+            android:paddingLeft="12dp"
+            android:layout_marginBottom="16dp"/>
+
         <!-- Password -->
         <TextView
             android:layout_width="wrap_content"
