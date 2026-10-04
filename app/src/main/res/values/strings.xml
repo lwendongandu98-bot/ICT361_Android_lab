@@ -1,6 +1,11 @@
 <resources>
 
-    <string name="app_name">Student Lab Group Management</string>
+
+        <string name="app_name">StudentLabGroupManagement</string>
+
+        <string name="open_drawer">Open Drawer</string>
+
+        <string name="close_drawer">Close Drawer</string>
 
     <string name="student">Student</string>
     <string name="hello_student">Hello, Student!</string>

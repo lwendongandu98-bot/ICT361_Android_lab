@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
+        // LOGIN BUTTON
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,11 +49,13 @@ public class MainActivity extends AppCompatActivity {
                 int selectedId = rgRole.getCheckedRadioButtonId();
 
                 if (selectedId == -1) {
+
                     Toast.makeText(
                             MainActivity.this,
-                            "Please select Student",
+                            "Please select Student or Lecturer",
                             Toast.LENGTH_SHORT
                     ).show();
+
                     return;
                 }
 
@@ -70,12 +73,11 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                boolean isValid =
-                        dbHelper.checkUserLogin(
-                                username,
-                                password,
-                                role
-                        );
+                boolean isValid = dbHelper.checkUserLogin(
+                        username,
+                        password,
+                        role
+                );
 
                 if (isValid) {
 
@@ -90,14 +92,29 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT
                     ).show();
 
-                    Intent intent =
-                            new Intent(
-                                    MainActivity.this,
-                                    StudentHomeActivity.class
-                            );
+                    // STUDENT LOGIN
+                    if (role.equalsIgnoreCase("Student")) {
 
-                    startActivity(intent);
-                    finish();
+                        Intent intent = new Intent(
+                                MainActivity.this,
+                                StudentHomeActivity.class
+                        );
+
+                        startActivity(intent);
+                        finish();
+
+                    }
+                    // LECTURER LOGIN
+                    else if (role.equalsIgnoreCase("Lecturer")) {
+
+                        Intent intent = new Intent(
+                                MainActivity.this,
+                                LecturerHomeActivity.class
+                        );
+
+                        startActivity(intent);
+                        finish();
+                    }
 
                 } else {
 
@@ -110,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // FORGOT PASSWORD
         tvForgotPassword.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -125,17 +143,49 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
+        // REGISTER LINK
         tvRegisterLink.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        StudentRegisterActivity.class
-                                )
-                        );
+                        int selectedId = rgRole.getCheckedRadioButtonId();
+
+                        if (selectedId == -1) {
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "Please select Student or Lecturer",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            return;
+                        }
+
+                        RadioButton rbSelected =
+                                findViewById(selectedId);
+
+                        String role =
+                                rbSelected.getText().toString();
+
+                        if (role.equalsIgnoreCase("Student")) {
+
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            StudentRegisterActivity.class
+                                    )
+                            );
+
+                        } else if (role.equalsIgnoreCase("Lecturer")) {
+
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            LecturerRegisterActivity.class
+                                    )
+                            );
+                        }
                     }
                 }
         );
