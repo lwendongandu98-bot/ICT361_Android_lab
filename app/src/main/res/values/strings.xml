@@ -1,0 +1,22 @@
+<resources>
+
+    <string name="app_name">Student Lab Group Management</string>
+
+    <string name="student">Student</string>
+    <string name="hello_student">Hello, Student!</string>
+    <string name="student_program">Student • Computer Science</string>
+
+    <string name="my_groups">My Groups</string>
+    <string name="timetable">Timetable</string>
+    <string name="profile">Profile</string>
+    <string name="resources">Resources</string>
+
+    <string name="quick_access">Quick Access</string>
+    <string name="group_status">Your Assigned Lab Group Status</string>
+    <string name="not_assigned">Not Assigned to Any Group</string>
+
+    <string name="home">Home</string>
+    <string name="groups">Groups</string>
+
+
+</resources>

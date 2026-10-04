@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds & Text -->
+    <color name="bg_main">#F7FAFC</color>
+    <color name="text_dark">#0D1B3E</color>
+    <color name="text_muted">#718096</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Action/Primary Colors -->
+    <color name="blue_primary">#0D47A1</color>
+    <color name="blue_accent">#1E88E5</color>
+
+    <!-- Flat colors representing the cards (use gradients for production) -->
+    <color name="card_blue">#2196F3</color>
+    <color name="card_purple">#AB47BC</color>
+    <color name="card_green">#4CAF50</color>
+    <color name="card_orange">#FF9800</color>
+
+    <!-- Quick Access Icon Background tints -->
+    <color name="tint_blue">#E3F2FD</color>
+    <color name="tint_purple">#F3E5F5</color>
+    <color name="tint_green">#E8F5E9</color>
+    <color name="tint_orange">#FFF3E0</color>
+</resources>
