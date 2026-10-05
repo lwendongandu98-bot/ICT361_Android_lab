@@ -1,0 +1,60 @@
+package com.example.StudentRegistrationApp.data.repository;
+
+import com.example.StudentRegistrationApp.data.local.AppDatabase;
+import com.example.StudentRegistrationApp.data.local.PendingOperation;
+import com.example.StudentRegistrationApp.data.local.PendingOperationDao;
+import com.example.StudentRegistrationApp.data.local.Student;
+import com.example.StudentRegistrationApp.data.local.StudentDao;
+
+public class StudentRepository {
+
+    private final AppDatabase database;
+    private final StudentDao studentDao;
+    private final PendingOperationDao pendingOperationDao;
+
+    public StudentRepository(AppDatabase database) {
+        this.database = database;
+        this.studentDao = database.studentDao();
+        this.pendingOperationDao = database.pendingOperationDao();
+        public void createPendingOperation(
+                int studentId,
+                String accountId,
+                String type,
+                String payload,
+                int baseVersion) {
+
+            String operationId = java.util.UUID.randomUUID().toString();
+
+            PendingOperation operation = new PendingOperation(
+                    operationId,
+                    studentId,
+                    accountId,
+                    type,
+                    payload,
+                    baseVersion,
+                    System.currentTimeMillis()
+            );
+
+            pendingOperationDao.insert(operation);
+        }
+    }
+
+    public void saveStudentAndOperation(
+            Student student,
+            PendingOperation operation) {
+
+        database.saveStudentAndOperation(student, operation);
+    }
+
+    public Student getStudentById(int studentId) {
+        return studentDao.getStudentById(studentId);
+    }
+
+    public void updateStudent(Student student) {
+        studentDao.update(student);
+    }
+
+    public void addPendingOperation(PendingOperation operation) {
+        pendingOperationDao.insert(operation);
+    }
+}
