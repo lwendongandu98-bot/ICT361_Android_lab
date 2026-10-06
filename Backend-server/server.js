@@ -1,23 +1,29 @@
 const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const dotenv = require('dotenv');
 
+dotenv.config();
+
+// Route Imports
 const authRoutes = require('./routes/authRoutes');
+const groupRoutes = require('./routes/groupRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 const app = express();
 
-app.use(cors());
+// Global Middleware
 app.use(express.json());
 
-// API Routes
+// API Route Mounts
 app.use('/api/auth', authRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/students', studentRoutes);
 
-// Base route test
+// Health Check Endpoint
 app.get('/', (req, res) => {
-    res.send('ICT361 Backend API is running...');
+  res.send('ICT361 Backend API is Running');
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
