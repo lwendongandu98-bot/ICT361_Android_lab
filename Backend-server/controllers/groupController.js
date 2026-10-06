@@ -53,6 +53,14 @@ exports.deleteGroup = async (req, res) => {
     res.status(200).json({ message: 'Group deleted successfully' });
   } catch (error) {
     console.error('Error deleting group:', error);
+
+    // Foreign key reference protection (Error 1451)
+    if (error.errno === 1451 || error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({
+        message: 'Cannot delete group because students are currently assigned to it.'
+      });
+    }
+
     res.status(500).json({ message: 'Database error', error: error.message });
   }
 };

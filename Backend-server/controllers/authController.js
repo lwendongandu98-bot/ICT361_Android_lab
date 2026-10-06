@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
         const userRole = role || 'student';
 
         const [result] = await db.execute(
-            'INSERT INTO Accounts (username, password_hash, role) VALUES (?, ?, ?)',
+            'INSERT INTO accounts (username, password_hash, role) VALUES (?, ?, ?)',
             [username, hashedPassword, userRole]
         );
 
@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
 
     try {
         const [rows] = await db.execute(
-            'SELECT * FROM Accounts WHERE username = ?',
+            'SELECT * FROM accounts WHERE username = ?',
             [username]
         );
 
@@ -56,9 +56,13 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-const token = jwt.sign(
-            { id: user.Account_id, username: user.username, role: user.role },
-            process.env.JWT_SECRET,
+        // Handle lowercase or uppercase column names from MySQL schema safely
+        const userId = user.account_id !== undefined ? user.account_id : user.Account_id;
+        const secret = process.env.JWT_SECRET || 'ict361_default_jwt_secret';
+
+        const token = jwt.sign(
+            { id: userId, username: user.username, role: user.role },
+            secret,
             { expiresIn: '1d' }
         );
 
@@ -66,7 +70,7 @@ const token = jwt.sign(
             message: 'Login successful',
             token,
             user: {
-                id: user.Account_id,
+                id: userId,
                 username: user.username,
                 role: user.role
             }
