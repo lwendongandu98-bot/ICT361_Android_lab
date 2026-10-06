@@ -13,13 +13,24 @@
         android:id="@+id/nav_students"
         android:title="Students" />
 
+    <!-- Added to match your screens -->
     <item
-        android:id="@+id/nav_tasks"
-        android:title="Tasks" />
+        android:id="@+id/nav_labs"
+        android:title="Labs" />
+
+    <!-- Added to match your screens -->
+    <item
+        android:id="@+id/nav_assignments"
+        android:title="Assignments" />
 
     <item
         android:id="@+id/nav_announcements"
         android:title="Announcements" />
+
+    <!-- Added to match your screens -->
+    <item
+        android:id="@+id/nav_submissions"
+        android:title="Submissions" />
 
     <item
         android:id="@+id/nav_timetable"

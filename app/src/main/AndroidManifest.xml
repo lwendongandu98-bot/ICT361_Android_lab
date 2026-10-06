@@ -19,7 +19,6 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -29,62 +28,65 @@
             android:name=".StudentRegisterActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".LecturerRegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
-        <!-- Student Dashboard -->
+        <!-- Dashboards -->
         <activity
             android:name=".StudentHomeActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".LecturerHomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
-
-        <!-- Forgot Password Screen -->
+        <!-- Feature Activities -->
         <activity
             android:name=".ForgotPasswordActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
-        <!-- Student Profile -->
         <activity
             android:name=".StudentProfileActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
-        <!-- Settings -->
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
-        <!-- Timetable -->
         <activity
             android:name=".TimetableActivity"
             android:exported="false" />
-
-        <!-- Tasks / Assignments -->
         <activity
             android:name=".TasksActivity"
             android:exported="false" />
-
-        <!-- Notifications -->
         <activity
             android:name=".NotificationActivity"
             android:exported="false" />
-
         <activity
-            android:name=".LecturerRegisterActivity"/>
-
+            android:name=".GroupsActivity"
+            android:exported="false" />
         <activity
-            android:name=".LecturerHomeActivity"
-            android:exported="false"/>
-
-        <activity android:name=".GroupsActivity" />
-        <activity android:name=".StudentsActivity" />
-        <activity android:name=".AssignmentsActivity" />
-        <activity android:name=".AnnouncementsActivity" />
-        <activity android:name=".LabsActivity" />
-        <activity android:name=".SubmissionsActivity" />
-
-
+            android:name=".StudentsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AssignmentsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AnnouncementsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LabsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SubmissionsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AssignStudentsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 
