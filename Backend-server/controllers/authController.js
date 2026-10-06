@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
         const userRole = role || 'student';
 
         const [result] = await db.execute(
-            'INSERT INTO Accounts (username, password_hash, role) VALUES (?, ?, ?)',
+            'INSERT INTO accounts (email, password_hash, role) VALUES (?, ?, ?)',
             [username, hashedPassword, userRole]
         );
 
@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
 
     try {
         const [rows] = await db.execute(
-            'SELECT * FROM Accounts WHERE username = ?',
+            'SELECT * FROM accounts WHERE email = ?',
             [username]
         );
 
@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
         }
 
 const token = jwt.sign(
-            { id: user.Account_id, username: user.username, role: user.role },
+            { id: user.id, username: user.email, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
