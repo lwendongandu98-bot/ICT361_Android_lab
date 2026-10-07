@@ -21,57 +21,77 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class SubmissionsActivity extends AppCompatActivity {
+public class CheckedLabsActivity extends AppCompatActivity {
 
-    private LinearLayout containerSubmissions;
-    private TextView tvNoSubmissions;
-    private Button btnOpenCheckedLabs;
+    private LinearLayout containerCheckedLabs;
+    private TextView tvNoCheckedLabs;
+    private Button btnBackToPending;
     private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_submissions);
+        setContentView(R.layout.activity_checked_labs);
 
         dbHelper = new DatabaseHelper(this);
 
-        containerSubmissions = findViewById(R.id.containerSubmissions);
-        tvNoSubmissions = findViewById(R.id.tvNoSubmissions);
-        btnOpenCheckedLabs = findViewById(R.id.btnOpenCheckedLabs);
+        // Bind layout views directly to exact XML resource IDs
+        containerCheckedLabs = findViewById(R.id.containerCheckedLabs);
+        tvNoCheckedLabs = findViewById(R.id.tvNoCheckedLabs);
 
-        if (btnOpenCheckedLabs != null) {
-            btnOpenCheckedLabs.setOnClickListener(v -> {
-                Intent intent = new Intent(SubmissionsActivity.this, CheckedLabsActivity.class);
-                startActivity(intent);
-            });
+        // Back Button Listener
+        btnBackToPending = findViewById(R.id.btnBackToPending);
+        if (btnBackToPending != null) {
+            btnBackToPending.setOnClickListener(v -> finish());
         }
 
-        loadSubmissions();
+        loadCheckedLabs();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadSubmissions();
-    }
-
-    private void loadSubmissions() {
-        containerSubmissions.removeAllViews();
-        Cursor cursor = dbHelper.getPendingSubmissions();
+    private void loadCheckedLabs() {
+        containerCheckedLabs.removeAllViews();
+        Cursor cursor = dbHelper.getCheckedSubmissions();
 
         if (cursor == null || cursor.getCount() == 0) {
-            if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.VISIBLE);
+            if (tvNoCheckedLabs != null) tvNoCheckedLabs.setVisibility(View.VISIBLE);
             if (cursor != null) cursor.close();
             return;
         }
 
-        if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.GONE);
+        if (tvNoCheckedLabs != null) tvNoCheckedLabs.setVisibility(View.GONE);
         LayoutInflater inflater = LayoutInflater.from(this);
 
+        String currentGroupDate = "";
+
         while (cursor.moveToNext()) {
-            int submissionId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
             String studentNumber = cursor.getString(cursor.getColumnIndexOrThrow("student_number"));
             String submittedAt = cursor.getString(cursor.getColumnIndexOrThrow("submitted_at"));
+
+            // Retrieve checked_at timestamp
+            String checkedAt = "";
+            int checkedAtIdx = cursor.getColumnIndex("checked_at");
+            if (checkedAtIdx != -1 && !cursor.isNull(checkedAtIdx)) {
+                checkedAt = cursor.getString(checkedAtIdx);
+            }
+
+            // Extract date portion (YYYY-MM-DD) for grouping headers
+            String dateOnly = "Checked Submissions";
+            if (!checkedAt.isEmpty()) {
+                dateOnly = checkedAt.contains(" ") ? checkedAt.split(" ")[0] : checkedAt;
+            } else if (submittedAt != null && !submittedAt.isEmpty()) {
+                dateOnly = submittedAt.contains(" ") ? submittedAt.split(" ")[0] : submittedAt;
+            }
+
+            // Insert dynamic date header when move date changes
+            if (!dateOnly.equals(currentGroupDate)) {
+                currentGroupDate = dateOnly;
+                View headerView = inflater.inflate(R.layout.item_date_header, containerCheckedLabs, false);
+                TextView txtDateHeader = headerView.findViewById(R.id.txtDateHeader);
+                if (txtDateHeader != null) {
+                    txtDateHeader.setText("Moved on: " + currentGroupDate);
+                }
+                containerCheckedLabs.addView(headerView);
+            }
 
             String filePath = "";
             int pathIndex = cursor.getColumnIndex("file_path");
@@ -79,7 +99,7 @@ public class SubmissionsActivity extends AppCompatActivity {
                 filePath = cursor.getString(pathIndex);
             }
 
-            View card = inflater.inflate(R.layout.item_submission_card, containerSubmissions, false);
+            View card = inflater.inflate(R.layout.item_submission_card, containerCheckedLabs, false);
 
             TextView txtStudentNumber = card.findViewById(R.id.txtStudentNumber);
             TextView txtSubmittedAt = card.findViewById(R.id.txtSubmittedAt);
@@ -87,47 +107,36 @@ public class SubmissionsActivity extends AppCompatActivity {
             Button btnDownloadSubmission = card.findViewById(R.id.btnDownloadSubmission);
             Button btnMoveToChecked = card.findViewById(R.id.btnMoveToChecked);
 
+            if (btnMoveToChecked != null) {
+                btnMoveToChecked.setVisibility(View.GONE);
+            }
+
             txtStudentNumber.setText("Student: " + studentNumber);
-            txtSubmittedAt.setText("Submitted: " + submittedAt);
+            txtSubmittedAt.setText("Submitted: " + submittedAt + (!checkedAt.isEmpty() ? " (Checked)" : ""));
 
             final String finalFilePath = filePath;
 
-            // View File Option
             if (btnViewSubmission != null) {
                 btnViewSubmission.setOnClickListener(v -> {
                     if (finalFilePath != null && !finalFilePath.trim().isEmpty()) {
                         openSubmissionFile(finalFilePath);
                     } else {
-                        Toast.makeText(SubmissionsActivity.this, "No file attached", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CheckedLabsActivity.this, "No file attached", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
-            // Download File Option
             if (btnDownloadSubmission != null) {
                 btnDownloadSubmission.setOnClickListener(v -> {
                     if (finalFilePath != null && !finalFilePath.trim().isEmpty()) {
                         downloadFileToStorage(finalFilePath);
                     } else {
-                        Toast.makeText(SubmissionsActivity.this, "No file to download", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CheckedLabsActivity.this, "No file to download", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
-            // Move to Checked Option
-            if (btnMoveToChecked != null) {
-                btnMoveToChecked.setOnClickListener(v -> {
-                    boolean success = dbHelper.markSubmissionAsChecked(submissionId);
-                    if (success) {
-                        Toast.makeText(SubmissionsActivity.this, "Submission marked as checked", Toast.LENGTH_SHORT).show();
-                        loadSubmissions();
-                    } else {
-                        Toast.makeText(SubmissionsActivity.this, "Failed to update submission", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            containerSubmissions.addView(card);
+            containerCheckedLabs.addView(card);
         }
 
         cursor.close();

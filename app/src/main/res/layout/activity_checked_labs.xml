@@ -14,30 +14,31 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="16dp">
 
+        <Button
+            android:id="@+id/btnBackToPending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#0056B3"
+            android:text="← Back"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:layout_marginEnd="12dp" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Pending Submissions"
+            android:text="Checked Labs"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
-
-        <Button
-            android:id="@+id/btnOpenCheckedLabs"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#6C757D"
-            android:text="Checked Labs"
-            android:textColor="@android:color/white"
-            android:textSize="12sp" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/tvNoSubmissions"
+        android:id="@+id/tvNoCheckedLabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No pending submissions received yet."
+        android:text="No checked lab submissions yet."
         android:textSize="16sp"
         android:textColor="@android:color/darker_gray"
         android:gravity="center"
@@ -49,7 +50,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/containerSubmissions"
+            android:id="@+id/containerCheckedLabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />

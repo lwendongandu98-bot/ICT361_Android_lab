@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class SessionManager {
-    private SharedPreferences pref;
-    private SharedPreferences.Editor editor;
+    private final SharedPreferences pref;
+    private final SharedPreferences.Editor editor;
+
     private static final String PREF_NAME = "UserSession";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_ROLE = "role";
@@ -21,22 +22,27 @@ public class SessionManager {
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_ROLE, role);
-        editor.commit();
+        editor.apply();
     }
 
-    // Retrieve active logged in username
+    // Check login status
+    public boolean isLoggedIn() {
+        return pref.getBoolean(KEY_IS_LOGGED_IN, false);
+    }
+
+    // Retrieve active logged-in username
     public String getUsername() {
-        return pref.getString(KEY_USERNAME, null);
+        return pref.getString(KEY_USERNAME, "");
     }
 
-    // Retrieve active logged in user role
+    // Retrieve active logged-in user role
     public String getUserRole() {
-        return pref.getString(KEY_ROLE, null);
+        return pref.getString(KEY_ROLE, "");
     }
 
     // Wipe session details on Logout action
     public void logoutUser() {
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 }

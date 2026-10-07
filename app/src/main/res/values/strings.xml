@@ -23,5 +23,24 @@
     <string name="home">Home</string>
     <string name="groups">Groups</string>
 
+    <string-array name="role_array">
+        <item>Student</item>
+        <item>Lecturer</item>
+    </string-array>
+    <!-- Your existing app strings will be here -->
 
+    <!-- Add these string arrays below -->
+    <string-array name="program_array">
+        <item>Computer Science</item>
+        <item>Information Technology</item>
+        <item>Software Engineering</item>
+        <item>Cyber Security</item>
+    </string-array>
+
+    <string-array name="group_array">
+        <item>Group A</item>
+        <item>Group B</item>
+        <item>Group C</item>
+        <item>Group D</item>
+    </string-array>
 </resources>

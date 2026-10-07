@@ -18,6 +18,7 @@ public class LecturerHomeActivity extends AppCompatActivity
 
     private DrawerLayout drawerLayout;
 
+    private CardView cardCourses;
     private CardView cardGroups;
     private CardView cardStudents;
     private CardView cardLabs;
@@ -57,6 +58,7 @@ public class LecturerHomeActivity extends AppCompatActivity
         }
 
         // Quick Action Cards initialization
+        cardCourses = findViewById(R.id.cardCourses);
         cardGroups = findViewById(R.id.cardGroups);
         cardStudents = findViewById(R.id.cardStudents);
         cardLabs = findViewById(R.id.cardLabs);
@@ -65,6 +67,14 @@ public class LecturerHomeActivity extends AppCompatActivity
         cardSubmissions = findViewById(R.id.cardSubmissions);
 
         // Set Click Listeners safely with Null Checks
+        if (cardCourses != null) {
+            cardCourses.setOnClickListener(v ->
+                    startActivity(new Intent(LecturerHomeActivity.this, AddCourseActivity.class))
+            );
+        } else {
+            Log.e("LecturerHome", "cardCourses missing in activity_lecturer_home.xml");
+        }
+
         if (cardGroups != null) {
             cardGroups.setOnClickListener(v ->
                     startActivity(new Intent(LecturerHomeActivity.this, GroupsActivity.class))
@@ -119,7 +129,9 @@ public class LecturerHomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         // Integrated drawer layout items to mirror dashboard capabilities
-        if (id == R.id.nav_groups) {
+        if (id == R.id.nav_courses) {
+            startActivity(new Intent(LecturerHomeActivity.this, AddCourseActivity.class));
+        } else if (id == R.id.nav_groups) {
             startActivity(new Intent(LecturerHomeActivity.this, GroupsActivity.class));
         } else if (id == R.id.nav_students) {
             startActivity(new Intent(LecturerHomeActivity.this, StudentsActivity.class));

@@ -88,17 +88,19 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvWelcomeName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Hello, Daniel Sakala"
+                                android:text="Hello, Student"
                                 android:textSize="24sp"
                                 android:textStyle="bold"/>
 
                             <TextView
+                                android:id="@+id/tvStudentProgram"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
-                                android:text="Student • Computer Science"
+                                android:text="Student"
                                 android:textSize="14sp"/>
 
                             <TextView
@@ -140,6 +142,50 @@
                     android:layout_height="wrap_content"
                     android:columnCount="2">
 
+                    <!-- LABS -->
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardLabs"
+                        android:layout_width="0dp"
+                        android:layout_height="190dp"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp"
+                        app:cardCornerRadius="20dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#0288D1"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@android:drawable/ic_menu_edit"
+                                app:tint="#FFFFFF" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="Labs"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="View lab work and submit assignments."
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
                     <!-- GROUPS -->
 
                     <androidx.cardview.widget.CardView
@@ -162,15 +208,22 @@
                                 android:layout_height="32dp"
                                 android:src="@android:drawable/ic_menu_myplaces"/>
 
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@android:drawable/ic_menu_today"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="My Groups"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
 
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@android:drawable/ic_menu_manage"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Manage lab groups and members."
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -197,10 +250,6 @@
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:src="@android:drawable/ic_menu_today"/>
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@android:drawable/ic_menu_today"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -211,7 +260,13 @@
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
 
-
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="View your weekly class schedule."
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -233,6 +288,7 @@
                             android:background="#2E7D32"
                             android:orientation="vertical"
                             android:padding="16dp">
+
                             <ImageView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
@@ -250,8 +306,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Manage your account and personal details."
-                                android:textColor="#FFFFFF" />
+                                android:layout_marginTop="4dp"
+                                android:text="Manage account and details."
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -283,7 +341,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="Recurrence"
+                                android:text="Tasks"
                                 android:textColor="#FFFFFF"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -291,8 +349,11 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Track your tasks, reminders and activities."
-                                android:textColor="#FFFFFF" />
+                                android:layout_marginTop="4dp"
+                                android:text="Track tasks, reminders and activities."
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
+
                         </LinearLayout>
 
                     </androidx.cardview.widget.CardView>

@@ -1,9 +1,12 @@
 package com.example.studentlabgroupmanagement;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,24 +22,40 @@ public class StudentHomeActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ImageButton menuButton;
 
+    private TextView tvWelcomeName;
+    private TextView tvStudentProgram;
+
     private CardView cardMyGroups;
     private CardView cardTimetable;
     private CardView cardProfile;
     private CardView cardTasks;
+    private CardView cardLabs;
+
+    private DatabaseHelper dbHelper;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_home);
 
+        dbHelper = new DatabaseHelper(this);
+        sessionManager = new SessionManager(this);
+
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         menuButton = findViewById(R.id.menuButton);
+
+        tvWelcomeName = findViewById(R.id.tvWelcomeName);
+        tvStudentProgram = findViewById(R.id.tvStudentProgram);
 
         cardMyGroups = findViewById(R.id.cardMyGroups);
         cardTimetable = findViewById(R.id.cardTimetable);
         cardProfile = findViewById(R.id.cardProfile);
         cardTasks = findViewById(R.id.cardTasks);
+        cardLabs = findViewById(R.id.cardLabs);
+
+        loadUserProfile();
 
         menuButton.setOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START));
@@ -51,6 +70,12 @@ public class StudentHomeActivity extends AppCompatActivity {
 
                 drawerLayout.closeDrawer(GravityCompat.START);
 
+            } else if (id == R.id.nav_labs) {
+
+                startActivity(new Intent(
+                        StudentHomeActivity.this,
+                        StudentLabActivity.class));
+
             } else if (id == R.id.nav_profile) {
 
                 startActivity(new Intent(
@@ -59,10 +84,9 @@ public class StudentHomeActivity extends AppCompatActivity {
 
             } else if (id == R.id.nav_groups) {
 
-                Toast.makeText(
+                startActivity(new Intent(
                         StudentHomeActivity.this,
-                        "Opening Groups...",
-                        Toast.LENGTH_SHORT).show();
+                        MyGroupActivity.class));
 
             } else if (id == R.id.nav_timetable) {
 
@@ -112,31 +136,93 @@ public class StudentHomeActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserProfile();
+    }
+
+    private void loadUserProfile() {
+        // Priority 1: Read active username from SessionManager
+        String username = sessionManager.getUsername();
+
+        // Priority 2: Fall back to UserPrefs SharedPreferences
+        if (username == null || username.trim().isEmpty()) {
+            SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            username = sharedPref.getString("username", "");
+        }
+
+        // Priority 3: Fall back to Intent extra
+        if ((username == null || username.trim().isEmpty()) && getIntent() != null) {
+            username = getIntent().getStringExtra("username");
+        }
+
+        if (username != null && !username.trim().isEmpty()) {
+            Cursor cursor = dbHelper.getUserProfile(username.trim());
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    int nameIdx = cursor.getColumnIndex("student_name");
+                    int progIdx = cursor.getColumnIndex("program");
+
+                    String name = (nameIdx != -1 && !cursor.isNull(nameIdx)) ? cursor.getString(nameIdx) : "";
+                    String program = (progIdx != -1 && !cursor.isNull(progIdx)) ? cursor.getString(progIdx) : "";
+
+                    if (tvWelcomeName != null && !name.isEmpty()) {
+                        tvWelcomeName.setText("Hello, " + name);
+                    }
+                    if (tvStudentProgram != null && !program.isEmpty()) {
+                        tvStudentProgram.setText("Student • " + program);
+                    }
+                }
+                cursor.close();
+            }
+        }
+    }
+
     private void setupDashboardClickListeners() {
 
-        cardMyGroups.setOnClickListener(v ->
-                Toast.makeText(
-                        StudentHomeActivity.this,
-                        "Opening Groups...",
-                        Toast.LENGTH_SHORT).show());
+        if (cardMyGroups != null) {
+            cardMyGroups.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            MyGroupActivity.class)));
+        }
 
-        cardTimetable.setOnClickListener(v ->
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        TimetableActivity.class)));
+        if (cardTimetable != null) {
+            cardTimetable.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            TimetableActivity.class)));
+        }
 
-        cardProfile.setOnClickListener(v ->
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        StudentProfileActivity.class)));
+        if (cardProfile != null) {
+            cardProfile.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            StudentProfileActivity.class)));
+        }
 
-        cardTasks.setOnClickListener(v ->
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        TasksActivity.class)));
+        if (cardTasks != null) {
+            cardTasks.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            TasksActivity.class)));
+        }
+
+        if (cardLabs != null) {
+            cardLabs.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            StudentLabActivity.class)));
+        }
     }
 
     private void performLogout() {
+
+        sessionManager.logoutUser();
+
+        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        sharedPref.edit().clear().apply();
 
         Intent intent = new Intent(
                 StudentHomeActivity.this,

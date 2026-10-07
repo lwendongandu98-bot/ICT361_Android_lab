@@ -1,15 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Labs Screen"
-        android:textSize="24sp"
-        android:textStyle="bold"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-</LinearLayout>
+        <!-- Page Title -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lab Management"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#075EA8" />
+
+        <!-- Lab Title -->
+
+        <EditText
+            android:id="@+id/etLabTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Lab Title" />
+
+        <!-- Lab Description -->
+
+        <EditText
+            android:id="@+id/etLabDescription"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="12dp"
+            android:gravity="top"
+            android:hint="Lab Description"
+            android:inputType="textMultiLine" />
+
+        <!-- Due Date -->
+
+        <EditText
+            android:id="@+id/etDueDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Due Date (DD/MM/YYYY)" />
+
+        <!-- Choose File -->
+
+        <Button
+            android:id="@+id/btnChooseFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Choose Lab File" />
+
+        <!-- Draft Button -->
+
+        <Button
+            android:id="@+id/btnSaveDraft"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#FF9800"
+            android:text="Save Draft"
+            android:textColor="#FFFFFF" />
+
+        <!-- Publish Button -->
+
+        <Button
+            android:id="@+id/btnPublishLab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#4CAF50"
+            android:text="Publish Now"
+            android:textColor="#FFFFFF" />
+
+        <!-- Uploaded Labs Section -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Uploaded Labs"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/labsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+</ScrollView>

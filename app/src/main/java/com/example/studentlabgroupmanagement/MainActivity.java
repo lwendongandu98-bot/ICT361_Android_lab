@@ -67,7 +67,10 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            String role = rbSelected.getText().toString();
+            String selectedRoleText = rbSelected.getText().toString().trim();
+
+            // Normalize role string so it matches Database representation ("Student" or "Lecturer")
+            String role = selectedRoleText.equalsIgnoreCase("Student") ? "Student" : "Lecturer";
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
@@ -79,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             if (isValid) {
                 try {
                     if (session != null) {
+                        // Store logged-in student's username and role into SharedPreferences session
                         session.createLoginSession(username, role);
                     }
                 } catch (Exception e) {
@@ -91,13 +95,13 @@ public class MainActivity extends AppCompatActivity {
                 if (role.equalsIgnoreCase("Student")) {
                     Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
                     startActivity(intent);
-                    // Temporarily removed finish() to prevent app exit if StudentHomeActivity crashes
+                    finish();
                 }
                 // LECTURER LOGIN
                 else if (role.equalsIgnoreCase("Lecturer")) {
                     Intent intent = new Intent(MainActivity.this, LecturerHomeActivity.class);
                     startActivity(intent);
-                    // Temporarily removed finish() to prevent app exit if LecturerHomeActivity crashes
+                    finish();
                 }
 
             } else {
