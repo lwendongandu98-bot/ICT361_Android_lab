@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Welcome Back"
-            android:textColor="#212121"
+            android:textColor="#111111"
             android:textSize="26sp"
             android:textStyle="bold" />
 
@@ -36,8 +36,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Sign in to access your dashboard"
-            android:textColor="#757575"
-            android:textSize="14sp" />
+            android:textColor="#424242"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <!-- LOGIN FORM CARD -->
         <androidx.cardview.widget.CardView
@@ -60,13 +61,18 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Username or Student ID">
+                    android:hint="Username or Student ID"
+                    app:boxStrokeColor="#0D47A1"
+                    app:hintTextColor="#0D47A1">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPersonName"
+                        android:textColor="#000000"
+                        android:textColorHint="#333333"
+                        android:textStyle="bold"
                         android:maxLines="1" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -79,6 +85,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:hint="Password"
+                    app:boxStrokeColor="#0D47A1"
+                    app:hintTextColor="#0D47A1"
                     app:passwordToggleEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -86,26 +94,29 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
+                        android:textColor="#000000"
+                        android:textColorHint="#333333"
+                        android:textStyle="bold"
                         android:maxLines="1" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- ROLE SELECTION SPINNER -->
+                <!-- ROLE SELECTION SPINNER LABEL -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Login As"
-                    android:textColor="#616161"
-                    android:textSize="12sp" />
+                    android:textColor="#111111"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
                 <Spinner
                     android:id="@+id/spinnerRole"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="4dp"
-                    android:background="@android:drawable/btn_dropdown"
-                    android:entries="@array/role_array" />
+                    android:background="@android:drawable/btn_dropdown" />
 
                 <!-- LOGIN BUTTON -->
                 <Button
@@ -135,7 +146,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Don't have an account? "
-                android:textColor="#616161" />
+                android:textColor="#212121"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvRegister"

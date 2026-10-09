@@ -11,13 +11,62 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- TOOLBAR WITH TOP-RIGHT PROFILE ICON (Dark Blue) -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#075EA8"
-            app:title="Lecturer Dashboard"
-            app:titleTextColor="#FFFFFF" />
+            android:background="#1565C0">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="Lecturer Dashboard"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Profile Action Button Container -->
+                <LinearLayout
+                    android:id="@+id/layoutLecturerProfileBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/imgTopProfileIcon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:padding="1dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/profile_placeholder"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                        app:strokeColor="#FFFFFF"
+                        app:strokeWidth="1dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Profile"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.Toolbar>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -30,12 +79,13 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Profile Card -->
+                <!-- Profile Card (Light Blue Background) -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="#E3F2FD">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -57,18 +107,20 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvWelcomeLecturer"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Welcome Lecturer"
-                                android:textColor="#212121"
+                                android:textColor="#0D47A1"
                                 android:textSize="22sp"
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/tvDepartment"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Computer Science Department"
-                                android:textColor="#757575" />
+                                android:textColor="#37474F" />
 
                         </LinearLayout>
 
@@ -100,7 +152,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -111,13 +164,15 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_sort_by_size" />
+                                android:src="@drawable/baseline_menu_book_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Courses"
+                                android:textColor="#FFFFFF"
                                 android:textStyle="bold" />
 
                         </LinearLayout>
@@ -134,7 +189,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -145,14 +201,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_agenda" />
+                                android:src="@drawable/baseline_groups_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Groups"
-                                android:textStyle="bold"/>
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -168,7 +226,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -179,14 +238,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_myplaces"/>
+                                android:src="@drawable/baseline_people_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Students"
-                                android:textStyle="bold"/>
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -202,7 +263,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -213,48 +275,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_manage"/>
+                                android:src="@drawable/baseline_computer_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Labs"
-                                android:textStyle="bold"/>
-
-                        </LinearLayout>
-
-                    </androidx.cardview.widget.CardView>
-
-                    <!-- Assignments -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardAssignments"
-                        android:layout_width="0dp"
-                        android:layout_height="120dp"
-                        android:layout_columnWeight="1"
-                        android:layout_margin="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_edit"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="Assignments"
-                                android:textStyle="bold"/>
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -270,7 +300,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -281,14 +312,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_dialog_info"/>
+                                android:src="@drawable/baseline_campaign_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Announcements"
-                                android:textStyle="bold"/>
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -304,7 +337,8 @@
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp">
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="#1565C0">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -315,14 +349,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_upload"/>
+                                android:src="@drawable/baseline_assignment_returned_24"
+                                app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:text="Submissions"
-                                android:textStyle="bold"/>
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -330,53 +366,17 @@
 
                 </GridLayout>
 
-                <!-- Recent Activity -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="Recent Activity"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Assignment Uploaded" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Lab Uploaded" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Group Created" />
-
-                    </LinearLayout>
-
-                </androidx.cardview.widget.CardView>
-
             </LinearLayout>
 
         </ScrollView>
 
+        <!-- 3-Item Bottom Navigation Bar -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?android:attr/windowBackground"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/bottom_nav_menu" />
 
     </LinearLayout>

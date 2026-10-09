@@ -192,9 +192,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    /**
-     * Retrieves full user profile information (Name, Program) for Dashboard/Header.
-     */
     public Cursor getUserProfile(String userIdentifier) {
         if (userIdentifier == null || userIdentifier.trim().isEmpty()) {
             return null;
@@ -202,10 +199,76 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery(
-                "SELECT " + COL_NAME + " AS student_name, " + COL_PROGRAM + " AS program " +
+                "SELECT " + COL_NAME + " AS student_name, " + COL_PROGRAM + " AS program, " + COL_EMAIL + " AS email " +
                         "FROM " + TABLE_USERS + " " +
                         "WHERE " + COL_USERNAME + " = ? OR " + COL_STUDENT_NUM + " = ?",
                 new String[]{userIdentifier, userIdentifier});
+    }
+
+    public boolean updateUserProfile(String username, String name, String email, String program, String age) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_NAME, name);
+        values.put(COL_EMAIL, email);
+        values.put(COL_PROGRAM, program);
+
+        int result = db.update(TABLE_USERS, values, COL_USERNAME + " = ?", new String[]{username});
+        return result > 0;
+    }
+
+    public Cursor getLecturerProfile(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT * FROM users WHERE username = ?",
+                new String[]{username}
+        );
+    }
+
+    public String getLecturerName(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String name = "";
+        Cursor cursor = db.rawQuery(
+                "SELECT " + COL_NAME + " FROM " + TABLE_USERS + " WHERE " + COL_USERNAME + " = ?",
+                new String[]{username});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(COL_NAME);
+                if (idx != -1 && !cursor.isNull(idx)) {
+                    name = cursor.getString(idx);
+                }
+            }
+            cursor.close();
+        }
+        return name;
+    }
+
+    public String getLecturerDepartment(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String department = "";
+        Cursor cursor = db.rawQuery(
+                "SELECT " + COL_PROGRAM + " FROM " + TABLE_USERS + " WHERE " + COL_USERNAME + " = ?",
+                new String[]{username});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(COL_PROGRAM);
+                if (idx != -1 && !cursor.isNull(idx)) {
+                    department = cursor.getString(idx);
+                }
+            }
+            cursor.close();
+        }
+        return department;
+    }
+
+    public boolean updateLecturerProfile(String username, String name, String email, String department) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_NAME, name);
+        values.put(COL_EMAIL, email);
+        values.put(COL_PROGRAM, department);
+
+        int result = db.update(TABLE_USERS, values, COL_USERNAME + " = ?", new String[]{username});
+        return result > 0;
     }
 
     public String getRecoveredPassword(String username, String email) {
@@ -236,11 +299,73 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return recoveredPassword;
     }
 
+    // --- STUDENT LIST QUERY FOR STUDENTS ACTIVITY ---
+
+    public List<Student> getAllStudents() {
+        List<Student> students = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT " + COL_NAME + ", " + COL_STUDENT_NUM + " FROM " + TABLE_USERS + " WHERE " + COL_ROLE + " = 'Student' ORDER BY " + COL_NAME + " ASC",
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int nameIdx = cursor.getColumnIndex(COL_NAME);
+                int studentNumIdx = cursor.getColumnIndex(COL_STUDENT_NUM);
+
+                do {
+                    String name = (nameIdx != -1 && !cursor.isNull(nameIdx)) ? cursor.getString(nameIdx) : "N/A";
+                    String studentNumber = (studentNumIdx != -1 && !cursor.isNull(studentNumIdx)) ? cursor.getString(studentNumIdx) : "N/A";
+
+                    students.add(new Student(name, studentNumber));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        return students;
+    }
+
+    // --- ANNOUNCEMENT MANAGEMENT METHODS ---
+
+    public boolean saveAnnouncement(String title, String message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("title", title);
+        values.put("message", message);
+
+        long result = db.insert("announcements", null, values);
+        return result != -1;
+    }
+
+    public List<Announcement> getAllAnnouncements() {
+        List<Announcement> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM announcements ORDER BY id DESC", null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int titleIdx = cursor.getColumnIndex("title");
+                int msgIdx = cursor.getColumnIndex("message");
+                int dateIdx = cursor.getColumnIndex("date_posted");
+
+                do {
+                    String title = (titleIdx != -1 && !cursor.isNull(titleIdx)) ? cursor.getString(titleIdx) : "";
+                    String message = (msgIdx != -1 && !cursor.isNull(msgIdx)) ? cursor.getString(msgIdx) : "";
+                    String date = (dateIdx != -1 && !cursor.isNull(dateIdx)) ? cursor.getString(dateIdx) : "";
+
+                    list.add(new Announcement(title, message, date));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        return list;
+    }
+
     // --- GROUP MANAGEMENT & REGISTRATION QUERIES ---
 
-    /**
-     * Retrieves all lab groups directly from the 'lab_groups' table.
-     */
     public List<String> getAllGroups() {
         List<String> groupList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -260,10 +385,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return groupList;
     }
 
-    /**
-     * Retrieves lecturer-created lab groups from 'lab_groups' that have fewer than 15 members.
-     * Full groups (>= 15 members) are filtered out automatically.
-     */
     public List<String> getAvailableLabGroups() {
         List<String> availableGroups = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -300,9 +421,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count < 15;
     }
 
-    /**
-     * Gets the lab group assigned to a specific student username or student number.
-     */
     public String getStudentGroup(String userIdentifier) {
         if (userIdentifier == null || userIdentifier.trim().isEmpty()) {
             return "Unassigned";
@@ -327,9 +445,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return group;
     }
 
-    /**
-     * Retrieves all student members belonging to a specific lab group.
-     */
     public Cursor getGroupMembers(String groupName) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + COL_NAME + " AS student_name, "

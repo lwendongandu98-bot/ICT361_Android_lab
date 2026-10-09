@@ -4,8 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -14,6 +17,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 public class StudentHomeActivity extends AppCompatActivity {
@@ -21,15 +25,18 @@ public class StudentHomeActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private ImageButton menuButton;
+    private BottomNavigationView bottomNavigation;
 
     private TextView tvWelcomeName;
     private TextView tvStudentProgram;
 
+    private LinearLayout layoutStudentProfileBtn;
+    private ImageView imgTopProfileIcon;
+
     private CardView cardMyGroups;
-    private CardView cardTimetable;
     private CardView cardProfile;
-    private CardView cardTasks;
     private CardView cardLabs;
+    private CardView cardAnnouncements;
 
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
@@ -45,15 +52,36 @@ public class StudentHomeActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         menuButton = findViewById(R.id.menuButton);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
 
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
         tvStudentProgram = findViewById(R.id.tvStudentProgram);
 
+        // Top-Right Profile Button & Icon
+        imgTopProfileIcon = findViewById(R.id.imgTopProfileIcon);
+        layoutStudentProfileBtn = findViewById(R.id.layoutStudentProfileBtn);
+
+        // Resolve active username for profile intent passing
+        String activeUsername = sessionManager.getUsername();
+        if (activeUsername == null || activeUsername.trim().isEmpty()) {
+            SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            activeUsername = sharedPref.getString("username", "");
+        }
+
+        final String currentUsername = activeUsername;
+
+        if (layoutStudentProfileBtn != null) {
+            layoutStudentProfileBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(StudentHomeActivity.this, StudentProfileActivity.class);
+                intent.putExtra("USERNAME", currentUsername);
+                startActivity(intent);
+            });
+        }
+
         cardMyGroups = findViewById(R.id.cardMyGroups);
-        cardTimetable = findViewById(R.id.cardTimetable);
         cardProfile = findViewById(R.id.cardProfile);
-        cardTasks = findViewById(R.id.cardTasks);
         cardLabs = findViewById(R.id.cardLabs);
+        cardAnnouncements = findViewById(R.id.cardAnnouncements);
 
         loadUserProfile();
 
@@ -61,6 +89,26 @@ public class StudentHomeActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START));
 
         setupDashboardClickListeners();
+
+        // Setup Bottom Navigation Listener
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.navHome);
+            bottomNavigation.setOnItemSelectedListener(item -> {
+                int id = item.getItemId();
+
+                if (id == R.id.navHome) {
+                    // Already home
+                    return true;
+                } else if (id == R.id.navLabs) {
+                    startActivity(new Intent(StudentHomeActivity.this, StudentLabActivity.class));
+                    return true;
+                } else if (id == R.id.navAnnouncements) {
+                    startActivity(new Intent(StudentHomeActivity.this, StudentAnnouncementsActivity.class));
+                    return true;
+                }
+                return false;
+            });
+        }
 
         navigationView.setNavigationItemSelectedListener(item -> {
 
@@ -70,47 +118,23 @@ public class StudentHomeActivity extends AppCompatActivity {
 
                 drawerLayout.closeDrawer(GravityCompat.START);
 
-            } else if (id == R.id.nav_labs) {
-
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        StudentLabActivity.class));
-
             } else if (id == R.id.nav_profile) {
 
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        StudentProfileActivity.class));
+                Intent intent = new Intent(StudentHomeActivity.this, StudentProfileActivity.class);
+                intent.putExtra("USERNAME", currentUsername);
+                startActivity(intent);
 
-            } else if (id == R.id.nav_groups) {
-
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        MyGroupActivity.class));
-
-            } else if (id == R.id.nav_timetable) {
+            } else if (id == R.id.nav_help) {
 
                 startActivity(new Intent(
                         StudentHomeActivity.this,
-                        TimetableActivity.class));
+                        HelpActivity.class));
 
-            } else if (id == R.id.nav_tasks) {
-
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        TasksActivity.class));
-
-            } else if (id == R.id.nav_notifications) {
+            } else if (id == R.id.nav_terms) {
 
                 startActivity(new Intent(
                         StudentHomeActivity.this,
-                        NotificationActivity.class));
-
-            } else if (id == R.id.nav_settings) {
-
-                startActivity(new Intent(
-                        StudentHomeActivity.this,
-                        SettingsActivity.class));
+                        TermsActivity.class));
 
             } else if (id == R.id.nav_logout) {
 
@@ -140,6 +164,9 @@ public class StudentHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadUserProfile();
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.navHome);
+        }
     }
 
     private void loadUserProfile() {
@@ -176,6 +203,17 @@ public class StudentHomeActivity extends AppCompatActivity {
                 }
                 cursor.close();
             }
+
+            // Dynamically load updated profile image whenever user returns to dashboard
+            SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            String savedUriStr = prefs.getString("profile_image_" + username.trim(), null);
+            if (savedUriStr != null && imgTopProfileIcon != null) {
+                try {
+                    imgTopProfileIcon.setImageURI(Uri.parse(savedUriStr));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -188,25 +226,13 @@ public class StudentHomeActivity extends AppCompatActivity {
                             MyGroupActivity.class)));
         }
 
-        if (cardTimetable != null) {
-            cardTimetable.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            StudentHomeActivity.this,
-                            TimetableActivity.class)));
-        }
-
         if (cardProfile != null) {
-            cardProfile.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            StudentHomeActivity.this,
-                            StudentProfileActivity.class)));
-        }
-
-        if (cardTasks != null) {
-            cardTasks.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            StudentHomeActivity.this,
-                            TasksActivity.class)));
+            cardProfile.setOnClickListener(v -> {
+                String username = sessionManager.getUsername();
+                Intent intent = new Intent(StudentHomeActivity.this, StudentProfileActivity.class);
+                intent.putExtra("USERNAME", username);
+                startActivity(intent);
+            });
         }
 
         if (cardLabs != null) {
@@ -214,6 +240,13 @@ public class StudentHomeActivity extends AppCompatActivity {
                     startActivity(new Intent(
                             StudentHomeActivity.this,
                             StudentLabActivity.class)));
+        }
+
+        if (cardAnnouncements != null) {
+            cardAnnouncements.setOnClickListener(v ->
+                    startActivity(new Intent(
+                            StudentHomeActivity.this,
+                            StudentAnnouncementsActivity.class)));
         }
     }
 

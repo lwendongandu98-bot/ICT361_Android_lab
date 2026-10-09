@@ -1,55 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/nav_home"
-        android:title="Home" />
+    <group android:checkableBehavior="single">
 
-    <item
-        android:id="@+id/nav_courses"
-        android:title="Courses" />
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/baseline_home_24"
+            android:title="Home" />
 
-    <item
-        android:id="@+id/nav_groups"
-        android:title="Groups" />
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Profile" />
 
-    <item
-        android:id="@+id/nav_students"
-        android:title="Students" />
+        <item
+            android:id="@+id/nav_help"
+            android:icon="@android:drawable/ic_menu_help"
+            android:title="Help and Support" />
 
-    <!-- Added to match your screens -->
-    <item
-        android:id="@+id/nav_labs"
-        android:title="Labs" />
+        <item
+            android:id="@+id/nav_terms"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="Terms and Conditions" />
 
-    <!-- Added to match your screens -->
-    <item
-        android:id="@+id/nav_assignments"
-        android:title="Assignments" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@android:drawable/ic_lock_power_off"
+            android:title="Logout" />
 
-    <item
-        android:id="@+id/nav_announcements"
-        android:title="Announcements" />
-
-    <!-- Added to match your screens -->
-    <item
-        android:id="@+id/nav_submissions"
-        android:title="Submissions" />
-
-    <item
-        android:id="@+id/nav_timetable"
-        android:title="Timetable" />
-
-    <item
-        android:id="@+id/nav_profile"
-        android:title="Profile" />
-
-    <item
-        android:id="@+id/nav_settings"
-        android:title="Settings" />
-
-    <item
-        android:id="@+id/nav_logout"
-        android:title="Logout" />
+    </group>
 
 </menu>
