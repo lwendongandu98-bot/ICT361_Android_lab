@@ -1,3 +1,46 @@
 <resources>
-    <string name="app_name">Student registration app</string>
+
+
+    <string name="app_name">StudentLabGroupManagement</string>
+
+    <string name="open_drawer">Open Drawer</string>
+
+    <string name="close_drawer">Close Drawer</string>
+
+    <string name="student">Student</string>
+    <string name="hello_student">Hello, Student!</string>
+    <string name="student_program">Student • Computer Science</string>
+
+    <string name="my_groups">My Groups</string>
+    <string name="timetable">Timetable</string>
+    <string name="profile">Profile</string>
+    <string name="resources">Resources</string>
+
+    <string name="quick_access">Quick Access</string>
+    <string name="group_status">Your Assigned Lab Group Status</string>
+    <string name="not_assigned">Not Assigned to Any Group</string>
+
+    <string name="home">Home</string>
+    <string name="groups">Groups</string>
+
+    <string-array name="role_array">
+        <item>Student</item>
+        <item>Lecturer</item>
+    </string-array>
+    <!-- Your existing app strings will be here -->
+
+    <!-- Add these string arrays below -->
+    <string-array name="program_array">
+        <item>Computer Science</item>
+        <item>Information Technology</item>
+        <item>Software Engineering</item>
+        <item>Cyber Security</item>
+    </string-array>
+
+    <string-array name="group_array">
+        <item>Group A</item>
+        <item>Group B</item>
+        <item>Group C</item>
+        <item>Group D</item>
+    </string-array>
 </resources>
