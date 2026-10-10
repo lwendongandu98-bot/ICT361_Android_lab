@@ -1,12 +1,21 @@
-package com.yourpackage.data.local;
+package com.example.studentregistrationapp.data.local;
 
 import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.yourpackage.data.local.dao.*;
-import com.yourpackage.data.local.entities.*;
+import com.example.studentregistrationapp.data.local.dao.CourseDao;
+import com.example.studentregistrationapp.data.local.dao.LabDao;
+import com.example.studentregistrationapp.data.local.dao.LabGroupDao;
+import com.example.studentregistrationapp.data.local.dao.StudentDao;
+import com.example.studentregistrationapp.data.local.dao.SubmissionDao;
+
+import com.example.studentregistrationapp.data.local.entities.CourseEntity;
+import com.example.studentregistrationapp.data.local.entities.LabEntity;
+import com.example.studentregistrationapp.data.local.entities.LabGroupEntity;
+import com.example.studentregistrationapp.data.local.entities.StudentEntity;
+import com.example.studentregistrationapp.data.local.entities.SubmissionEntity;
 
 @Database(entities = {
         StudentEntity.class,
