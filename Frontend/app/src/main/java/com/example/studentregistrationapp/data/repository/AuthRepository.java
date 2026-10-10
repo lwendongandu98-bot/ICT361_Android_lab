@@ -18,6 +18,21 @@ public class AuthRepository {
         return errorMessageLiveData;
     }
 
+    // Matches the loginUser method signature called by AuthViewModel
+    public void loginUser(String username, String password, String role, AuthCallback callback) {
+        if (username == null || password == null) {
+            callback.onError("Invalid credentials.");
+            return;
+        }
+
+        // TODO: Implement Volley network request to Node.js /api/auth/login endpoint here
+        // For now, simulate successful response:
+        UserSession session = new UserSession();
+        userSessionLiveData.setValue(session);
+        errorMessageLiveData.setValue(null);
+        callback.onSuccess(role);
+    }
+
     public void login(LoginRequest request) {
         if (request == null) {
             errorMessageLiveData.setValue("Invalid credentials.");
@@ -30,5 +45,10 @@ public class AuthRepository {
 
     public void logout() {
         userSessionLiveData.setValue(null);
+    }
+
+    public interface AuthCallback {
+        void onSuccess(String role);
+        void onError(String error);
     }
 }

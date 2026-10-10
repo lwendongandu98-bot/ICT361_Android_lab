@@ -1,13 +1,31 @@
 package com.example.studentregistrationapp.data.model;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+
+@Entity(tableName = "students")
 public class Student {
+
+    @PrimaryKey(autoGenerate = true)
+    private long id; // Local database ID primary key
+
+    @ColumnInfo(name = "name")
     private String name;
+
+    @ColumnInfo(name = "username")
     private String username;
+
+    @ColumnInfo(name = "student_number")
     private String studentNumber;
+
+    @ColumnInfo(name = "email")
     private String email;
+
+    @ColumnInfo(name = "password")
     private String password;
 
-    // Default Constructor
+    // Default Constructor required by Room
     public Student() {}
 
     // Main Constructor
@@ -20,6 +38,14 @@ public class Student {
     }
 
     // Getters and Setters
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }

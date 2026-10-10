@@ -4,29 +4,17 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.example.studentregistrationapp.data.model.Lecturer;
-import java.util.ArrayList;
+import com.example.studentregistrationapp.data.repository.LecturerRepository;
 import java.util.List;
 
 public class LecturerViewModel extends ViewModel {
 
-    private final MutableLiveData<List<Lecturer>> lecturers = new MutableLiveData<>();
+    private final LecturerRepository repository = new LecturerRepository();
     private final MutableLiveData<Lecturer> selectedLecturer = new MutableLiveData<>();
 
-    public LecturerViewModel() {
-        loadLecturers();
-    }
-
-    private void loadLecturers() {
-        List<Lecturer> lecturerList = new ArrayList<>();
-        lecturerList.add(new Lecturer("LEC01", "Dr. Smith", "smith@university.ac.zm", "Computer Science"));
-        lecturerList.add(new Lecturer("LEC02", "Prof. Banda", "banda@university.ac.zm", "Information Technology"));
-        lecturerList.add(new Lecturer("LEC03", "Dr. Mwewa", "mwewa@university.ac.zm", "Cybersecurity"));
-
-        lecturers.setValue(lecturerList);
-    }
-
+    // Expose observed list from repository
     public LiveData<List<Lecturer>> getLecturers() {
-        return lecturers;
+        return repository.getObservedLecturers();
     }
 
     public LiveData<Lecturer> getSelectedLecturer() {

@@ -4,30 +4,17 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.example.studentregistrationapp.data.model.LabGroup;
-import java.util.ArrayList;
+import com.example.studentregistrationapp.data.repository.LabGroupRepository;
 import java.util.List;
 
 public class LabGroupViewModel extends ViewModel {
 
-    private final MutableLiveData<List<LabGroup>> labGroups = new MutableLiveData<>();
+    private final LabGroupRepository repository = new LabGroupRepository();
     private final MutableLiveData<String> selectionStatus = new MutableLiveData<>();
 
-    public LabGroupViewModel() {
-        loadDefaultLabGroups();
-    }
-
-    // Populate initial dummy data for testing
-    private void loadDefaultLabGroups() {
-        List<LabGroup> defaultGroups = new ArrayList<>();
-        defaultGroups.add(new LabGroup("L1", "Lab Group 1 (Mon 08:00 - 10:00)", 30, 28));
-        defaultGroups.add(new LabGroup("L2", "Lab Group 2 (Tue 10:00 - 12:00)", 30, 30)); // Full group
-        defaultGroups.add(new LabGroup("L3", "Lab Group 3 (Thu 14:00 - 16:00)", 30, 15));
-
-        labGroups.setValue(defaultGroups);
-    }
-
+    // Fetch live lab groups from repository (Room / Node.js backend)
     public LiveData<List<LabGroup>> getLabGroups() {
-        return labGroups;
+        return repository.getObservedLabGroups();
     }
 
     public LiveData<String> getSelectionStatus() {

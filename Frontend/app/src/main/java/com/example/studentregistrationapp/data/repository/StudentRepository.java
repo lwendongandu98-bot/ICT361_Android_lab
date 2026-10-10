@@ -1,11 +1,14 @@
 package com.example.studentregistrationapp.data.repository;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import com.example.studentregistrationapp.data.model.Student;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StudentRepository {
 
+    private final MutableLiveData<List<Student>> studentsLiveData = new MutableLiveData<>();
     private final List<Student> studentList = new ArrayList<>();
 
     public StudentRepository() {
@@ -16,6 +19,12 @@ public class StudentRepository {
         s1.setEmail("victor@example.com");
         s1.setPassword("pass123");
         studentList.add(s1);
+        studentsLiveData.setValue(studentList);
+    }
+
+    // Matches getObservedStudents called in StudentViewModel
+    public LiveData<List<Student>> getObservedStudents() {
+        return studentsLiveData;
     }
 
     public List<Student> getStudents() {
@@ -28,6 +37,8 @@ public class StudentRepository {
 
     public void registerStudent(Student student) {
         studentList.add(student);
+        studentsLiveData.setValue(studentList); // Notify observers
+        // TODO: Add local Room insert and Volley sync to Node.js backend here
     }
 
     public void updateStudent(Student student) {

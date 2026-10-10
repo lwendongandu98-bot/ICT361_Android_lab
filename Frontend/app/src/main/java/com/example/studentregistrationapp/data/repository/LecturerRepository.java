@@ -12,8 +12,13 @@ public class LecturerRepository {
 
     public LecturerRepository() {
         List<Lecturer> initialLecturers = new ArrayList<>();
-        initialLecturers.add(new Lecturer());
+        initialLecturers.add(new Lecturer("LEC01", "Dr. Smith", "smith@university.ac.zm", "Computer Science"));
         lecturersLiveData.setValue(initialLecturers);
+    }
+
+    // Matches getObservedLecturers called in LecturerViewModel
+    public LiveData<List<Lecturer>> getObservedLecturers() {
+        return lecturersLiveData;
     }
 
     public LiveData<List<Lecturer>> getLecturers() {

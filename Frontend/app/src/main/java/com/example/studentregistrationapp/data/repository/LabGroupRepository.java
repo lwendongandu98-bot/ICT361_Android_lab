@@ -12,8 +12,13 @@ public class LabGroupRepository {
 
     public LabGroupRepository() {
         List<LabGroup> initialGroups = new ArrayList<>();
-        initialGroups.add(new LabGroup());
+        initialGroups.add(new LabGroup("L1", "Lab Group 1 (Mon 08:00 - 10:00)", 30, 28));
         labGroupsLiveData.setValue(initialGroups);
+    }
+
+    // Matches getObservedLabGroups called in LabGroupViewModel
+    public LiveData<List<LabGroup>> getObservedLabGroups() {
+        return labGroupsLiveData;
     }
 
     public LiveData<List<LabGroup>> getLabGroups() {
