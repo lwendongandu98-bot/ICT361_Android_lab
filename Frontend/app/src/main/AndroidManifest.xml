@@ -1,143 +1,285 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+
     xmlns:tools="http://schemas.android.com/tools">
 
+
+
     <application
+
         android:allowBackup="true"
+
         android:dataExtractionRules="@xml/data_extraction_rules"
+
         android:fullBackupContent="@xml/backup_rules"
+
         android:icon="@mipmap/ic_launcher"
+
         android:label="@string/app_name"
+
         android:roundIcon="@mipmap/ic_launcher_round"
+
         android:supportsRtl="true"
+
         android:theme="@style/Theme.StudentLabGroupManagement">
 
+
+
         <!-- Main/Login Activity -->
+
         <activity
+
             android:name=".MainActivity"
+
             android:exported="true"
+
             android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
 
+
+
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
         </activity>
 
+
+
         <!-- Registration -->
+
         <activity
+
             android:name=".StudentRegisterActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".LecturerRegisterActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
+
 
         <!-- Dashboards -->
+
         <activity
+
             android:name=".StudentHomeActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".LecturerHomeActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
+
 
         <!-- Lecturer Profile -->
+
         <activity
+
             android:name=".LecturerProfileActivity"
+
             android:exported="false" />
+
+
 
         <!-- Features -->
+
         <activity
+
             android:name=".ForgotPasswordActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".StudentProfileActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".SettingsActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".TimetableActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".TasksActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".NotificationActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".GroupsActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".StudentsActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".AnnouncementsActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".StudentAnnouncementsActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".LabsActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".SubmissionsActivity"
+
             android:exported="false" />
+
         <activity
+
             android:name=".AssignStudentsActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".StudentLabActivity"
+
             android:exported="false"
+
             android:label="Student Labs"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".CheckedLabsActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".MyGroupActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".LoginActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".RegisterActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".AddCourseActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
+
 
         <provider
+
             android:name="androidx.core.content.FileProvider"
+
             android:authorities="${applicationId}.provider"
+
             android:exported="false"
+
             android:grantUriPermissions="true">
+
             <meta-data
+
                 android:name="android.support.FILE_PROVIDER_PATHS"
+
                 android:resource="@xml/file_paths" />
+
         </provider>
 
+
+
         <activity
+
             android:name=".HelpActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
         <activity
+
             android:name=".TermsActivity"
+
             android:exported="false"
+
             android:windowSoftInputMode="adjustResize" />
+
     </application>
+
+
 
 </manifest>
