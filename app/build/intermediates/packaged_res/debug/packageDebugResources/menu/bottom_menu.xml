@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navHome"
+        android:title="Home"
+        android:icon="@drawable/baseline_home_24"/>
+
+    <item
+        android:id="@+id/navLabs"
+        android:title="Labs"
+        android:icon="@drawable/baseline_computer_24"/>
+
+    <item
+        android:id="@+id/navAnnouncements"
+        android:title="Announcements"
+        android:icon="@drawable/baseline_campaign_24"/>
+
+</menu>

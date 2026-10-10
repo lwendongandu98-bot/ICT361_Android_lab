@@ -1,0 +1,370 @@
+[
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_add_course.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_add_course.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_groups_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_groups_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_date_header.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_date_header.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-mdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_login.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_lecturer_home.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_lecturer_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\menu_bottom_nav_menu.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\menu\\bottom_nav_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_lecturer_home.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_lecturer_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\drawable\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-mdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_timetable.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_timetable.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_student_profile.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_student_profile.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_submissions.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_submissions.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/menu_lecturer_drawer_menu.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/menu/lecturer_drawer_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_assignments.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_assignments.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_labs.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_labs.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_checked_labs.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_checked_labs.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_notificationactivity.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\notificationactivity.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/menu_bottom_menu.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/menu/bottom_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_student_home.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_student_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-hdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_nav_header_lecturer.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\nav_header_lecturer.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_student_lab.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_student_lab.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_group_card.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_group_card.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_announcement.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_announcement.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_nav_header_student.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/nav_header_student.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_student_home.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_student_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\menu_androidresoucedirectory.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\menu\\androidresoucedirectory.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\xml\\backup_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxxhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/xml_file_paths.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_submission_card.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_submission_card.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_menu_book_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_menu_book_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_settings.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\menu_bottom_menu.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\menu\\bottom_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_lecturer_register.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_lecturer_register.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_announcements.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_announcements.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_home_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_home_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_student_profile.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_student_profile.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_register.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_help.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_help.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\menu_student_drawer_menu.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\menu\\student_drawer_menu.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_students.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_students.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\menu_lecturer_drawer_menu.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\menu\\lecturer_drawer_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/menu/bottom_nav_menu.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_nav_header_student.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\nav_header_student.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-mdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-hdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_settings.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_settings.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_student_lab_card.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_student_lab_card.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_spinner_item.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/spinner_item.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_outline_3p_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/outline_3p_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/menu_student_drawer_menu.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/menu/student_drawer_menu.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_group_member.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_group_member.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_tasks.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_tasks.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_assignment_returned_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_assignment_returned_24.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_item_group_card.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\item_group_card.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_announcements.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_announcements.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_lecturer_profile.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_lecturer_profile.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_groups.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_groups.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_students.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_students.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_forgot_password.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_forgot_password.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\xml\\data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_student_announcements.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_student_announcements.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_item_student_card.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\item_student_card.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxxhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\drawable_dashboard_card.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\drawable\\dashboard_card.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-hdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_my_group.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_my_group.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_submissions.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_submissions.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\drawable_circle_profile.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\drawable\\circle_profile.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\drawable_profile_placeholder.png.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\drawable\\profile_placeholder.png"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_student.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_student.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_labs.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_labs.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_assign_students.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_assign_students.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxxhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\layout_activity_student_register.xml.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\layout\\activity_student_register.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_people_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_people_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_activity_terms.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/activity_terms.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_computer_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_computer_24.xml"
+    },
+    {
+        "merged": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-debug-41:\\mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\Ncbltd\\.gradle\\daemon\\9.6.0\\com.example.studentlabgroupmanagement.app-main-43:\\mipmap-xxhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/drawable_baseline_campaign_24.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/drawable/baseline_campaign_24.xml"
+    },
+    {
+        "merged": "com.example.studentlabgroupmanagement.app-debug-41:/layout_item_lab_card.xml.flat",
+        "source": "com.example.studentlabgroupmanagement.app-main-43:/layout/item_lab_card.xml"
+    }
+]

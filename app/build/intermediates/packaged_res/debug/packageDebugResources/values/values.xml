@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="group_array">
+        <item>Group A</item>
+        <item>Group B</item>
+        <item>Group C</item>
+        <item>Group D</item>
+    </string-array>
+    <string-array name="program_array">
+        <item>Computer Science</item>
+        <item>Information Technology</item>
+        <item>Software Engineering</item>
+        <item>Cyber Security</item>
+    </string-array>
+    <string-array name="role_array">
+        <item>Student</item>
+        <item>Lecturer</item>
+    </string-array>
+    <color name="bg_main">#F7FAFC</color>
+    <color name="blue_accent">#1976D2</color>
+    <color name="blue_primary">#0D47A1</color>
+    <color name="card_blue">#1976D2</color>
+    <color name="card_green">#388E3C</color>
+    <color name="card_orange">#F57C00</color>
+    <color name="card_red">#D32F2F</color>
+    <color name="text_dark">#000000</color>
+    <color name="text_dark_navy">#0D1B3E</color>
+    <color name="text_deep_black">#000000</color>
+    <color name="text_muted">#333333</color>
+    <color name="tint_blue">#E3F2FD</color>
+    <color name="tint_green">#E8F5E9</color>
+    <color name="tint_orange">#FFF3E0</color>
+    <color name="tint_red">#FFEBEE</color>
+    <color name="tint_red_bg">#FFEBEE</color>
+    <color name="vivid_red">#D32F2F</color>
+    <color name="vivid_red_dark">#B71C1C</color>
+    <color name="white">#FFFFFF</color>
+    <string name="app_name">StudentLabGroupManagement</string>
+    <string name="close_drawer">Close Drawer</string>
+    <string name="group_status">Your Assigned Lab Group Status</string>
+    <string name="groups">Groups</string>
+    <string name="hello_student">Hello, Student!</string>
+    <string name="home">Home</string>
+    <string name="my_groups">My Groups</string>
+    <string name="not_assigned">Not Assigned to Any Group</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="profile">Profile</string>
+    <string name="quick_access">Quick Access</string>
+    <string name="resources">Resources</string>
+    <string name="student">Student</string>
+    <string name="student_program">Student • Computer Science</string>
+    <string name="timetable">Timetable</string>
+    <style name="CustomEditTextStyle" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">#111111</item>
+        <item name="android:textColorHint">#424242</item>
+    </style>
+    <style name="Theme.StudentLabGroupManagement" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">#0D47A1</item>
+        <item name="colorSecondary">#D32F2F</item>
+        <item name="android:statusBarColor">#002171</item>
+
+        
+        <item name="editTextStyle">@style/CustomEditTextStyle</item>
+    </style>
+</resources>
