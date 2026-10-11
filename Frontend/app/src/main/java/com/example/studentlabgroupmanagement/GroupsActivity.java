@@ -85,15 +85,14 @@ public class GroupsActivity extends AppCompatActivity {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
             List<LabGroupEntity> groups = db.labGroupDao().searchGroups("%" + filterQuery + "%");
 
+            if (groups == null) return;
+
             runOnUiThread(() -> {
                 groupsContainer.removeAllViews();
-                if (groups == null) return;
+                LayoutInflater inflater = LayoutInflater.from(GroupsActivity.this);
 
-                LayoutInflater inflater = LayoutInflater.from(this);
                 for (LabGroupEntity group : groups) {
                     String name = group.getGroupName();
-                    // Fetch count of students in this group
-                    int count = db.studentDao().getStudentCountByGroup(name);
 
                     View cardView = inflater.inflate(R.layout.item_group_card, groupsContainer, false);
                     TextView txtTitle = cardView.findViewById(R.id.txtGroupNameDisplay);
@@ -102,7 +101,12 @@ public class GroupsActivity extends AppCompatActivity {
                     Button btnDelete = cardView.findViewById(R.id.btnDeleteGroup);
 
                     txtTitle.setText(name);
-                    txtCount.setText("Occupancy: " + count + " / 15 Members Max");
+
+                    // Fetch student count asynchronously to prevent blocking the UI thread
+                    new Thread(() -> {
+                        int count = db.studentDao().getStudentCountByGroup(name);
+                        runOnUiThread(() -> txtCount.setText("Occupancy: " + count + " / 15 Members Max"));
+                    }).start();
 
                     btnManage.setOnClickListener(v -> {
                         Intent intent = new Intent(GroupsActivity.this, AssignStudentsActivity.class);
