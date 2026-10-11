@@ -45,6 +45,10 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
 
+    // --- ADDED: Retrofit & Gson Converter ---
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     // WorkManager for background sync
     implementation("androidx.work:work-runtime:2.9.0")
 
