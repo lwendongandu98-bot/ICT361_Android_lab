@@ -1,4 +1,4 @@
-package com.example.studentregistrationapp.data.local.entities;
+package com.example.studentlabgroupmanagement.data.local.entity;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -8,11 +8,14 @@ public class LabGroupEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String groupName;
-    private String courseCode;
+    private String description;
 
-    public LabGroupEntity(String groupName, String courseCode) {
+    // Default constructor required by Room
+    public LabGroupEntity() {}
+
+    public LabGroupEntity(String groupName, String description) {
         this.groupName = groupName;
-        this.courseCode = courseCode;
+        this.description = description;
     }
 
     public int getId() { return id; }
@@ -21,6 +24,6 @@ public class LabGroupEntity {
     public String getGroupName() { return groupName; }
     public void setGroupName(String groupName) { this.groupName = groupName; }
 
-    public String getCourseCode() { return courseCode; }
-    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

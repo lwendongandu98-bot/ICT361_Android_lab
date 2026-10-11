@@ -1,4 +1,4 @@
-package com.example.studentregistrationapp.data.local.entities;
+package com.example.studentlabgroupmanagement.data.local.entity;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -9,6 +9,9 @@ public class CourseEntity {
     private int id;
     private String courseCode;
     private String courseName;
+
+    // Default constructor required by Room
+    public CourseEntity() {}
 
     public CourseEntity(String courseCode, String courseName) {
         this.courseCode = courseCode;

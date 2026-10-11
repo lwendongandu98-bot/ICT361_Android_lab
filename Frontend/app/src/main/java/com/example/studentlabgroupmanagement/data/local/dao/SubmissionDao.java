@@ -1,10 +1,10 @@
-package com.example.studentregistrationapp.data.local.dao;
+package com.example.studentlabgroupmanagement.data.local.dao;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import com.example.studentregistrationapp.data.local.entities.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
 import java.util.List;
 
 @Dao

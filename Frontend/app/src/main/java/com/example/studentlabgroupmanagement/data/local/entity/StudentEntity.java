@@ -4,45 +4,56 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "students")
+@Entity(tableName = "users")
 public class StudentEntity {
     @PrimaryKey
     @NonNull
-    private String studentId;
     private String username;
     private String name;
     private String studentNum;
     private String email;
+    private String password;
     private String program;
     private String labGroup;
-    private int baseVersion;
-    private String syncStatus; // "Saved locally", "Pending", "Synced", "Action required"
+    private String role;
 
-    public StudentEntity(@NonNull String studentId, String username, String name, String studentNum,
-                         String email, String program, String labGroup, int baseVersion, String syncStatus) {
-        this.studentId = studentId;
+    // Default constructor required by Room
+    public StudentEntity() {}
+
+    public StudentEntity(@NonNull String username, String name, String studentNum, String email,
+                         String password, String program, String labGroup, String role) {
         this.username = username;
         this.name = name;
         this.studentNum = studentNum;
         this.email = email;
+        this.password = password;
         this.program = program;
         this.labGroup = labGroup;
-        this.baseVersion = baseVersion;
-        this.syncStatus = syncStatus;
+        this.role = role;
     }
 
     @NonNull
-    public String getStudentId() { return studentId; }
     public String getUsername() { return username; }
-    public String getName() { return name; }
-    public String getStudentNum() { return studentNum; }
-    public String getEmail() { return email; }
-    public String getProgram() { return program; }
-    public String getLabGroup() { return labGroup; }
-    public int getBaseVersion() { return baseVersion; }
-    public String getSyncStatus() { return syncStatus; }
+    public void setUsername(@NonNull String username) { this.username = username; }
 
-    public void setSyncStatus(String syncStatus) { this.syncStatus = syncStatus; }
-    public void setBaseVersion(int baseVersion) { this.baseVersion = baseVersion; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getStudentNum() { return studentNum; }
+    public void setStudentNum(String studentNum) { this.studentNum = studentNum; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getProgram() { return program; }
+    public void setProgram(String program) { this.program = program; }
+
+    public String getLabGroup() { return labGroup; }
     public void setLabGroup(String labGroup) { this.labGroup = labGroup; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

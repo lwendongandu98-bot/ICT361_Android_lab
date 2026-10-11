@@ -6,14 +6,34 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.OperationEntity;
+
 import com.example.studentlabgroupmanagement.data.local.dao.StudentDao;
+import com.example.studentlabgroupmanagement.data.local.dao.CourseDao;
+import com.example.studentlabgroupmanagement.data.local.dao.LabGroupDao;
+import com.example.studentlabgroupmanagement.data.local.dao.LabDao;
+import com.example.studentlabgroupmanagement.data.local.dao.SubmissionDao;
 import com.example.studentlabgroupmanagement.data.local.dao.OperationDao;
 
-@Database(entities = {StudentEntity.class, OperationEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {
+        StudentEntity.class,
+        CourseEntity.class,
+        LabGroupEntity.class,
+        LabEntity.class,
+        SubmissionEntity.class,
+        OperationEntity.class
+}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract StudentDao studentDao();
+    public abstract CourseDao courseDao();
+    public abstract LabGroupDao labGroupDao();
+    public abstract LabDao labDao();
+    public abstract SubmissionDao submissionDao();
     public abstract OperationDao operationDao();
 
     private static volatile AppDatabase INSTANCE;

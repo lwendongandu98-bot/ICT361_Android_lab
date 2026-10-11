@@ -1,4 +1,4 @@
-package com.example.studentregistrationapp.data.local.entities;
+package com.example.studentlabgroupmanagement.data.local.entity;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -10,11 +10,18 @@ public class LabEntity {
     private String title;
     private String description;
     private String dueDate;
+    private String filePath;
+    private String status;
 
-    public LabEntity(String title, String description, String dueDate) {
+    // Default constructor required by Room
+    public LabEntity() {}
+
+    public LabEntity(String title, String description, String dueDate, String filePath, String status) {
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
+        this.filePath = filePath;
+        this.status = status;
     }
 
     public int getId() { return id; }
@@ -28,4 +35,10 @@ public class LabEntity {
 
     public String getDueDate() { return dueDate; }
     public void setDueDate(String dueDate) { this.dueDate = dueDate; }
+
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

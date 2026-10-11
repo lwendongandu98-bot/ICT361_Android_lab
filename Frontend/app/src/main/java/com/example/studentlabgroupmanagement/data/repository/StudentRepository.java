@@ -14,17 +14,18 @@ public class StudentRepository {
     }
 
     // Save proposed edit and operation atomically in a Room transaction
-    public void saveOfflineEdit(String studentId, String accountId, String type, String payload, int baseVersion) {
+    public void saveOfflineEdit(String username, String accountId, String type, String payload, int baseVersion) {
         db.runInTransaction(() -> {
-            StudentEntity student = db.studentDao().getStudentById(studentId);
+            StudentEntity student = db.studentDao().getStudentById(username);
             if (student != null) {
-                student.setSyncStatus("Pending");
+                // Since syncStatus was moved or if you want to handle updates:
+                // student.setSyncStatus("Pending");
                 db.studentDao().updateStudent(student);
             }
 
             String operationId = UUID.randomUUID().toString();
             OperationEntity operation = new OperationEntity(
-                    operationId, studentId, accountId, type, payload, baseVersion, System.currentTimeMillis()
+                    operationId, username, accountId, type, payload, baseVersion, System.currentTimeMillis()
             );
             db.operationDao().insertOperation(operation);
         });

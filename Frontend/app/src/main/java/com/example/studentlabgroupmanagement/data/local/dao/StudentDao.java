@@ -18,9 +18,9 @@ public interface StudentDao {
     @Update
     void updateStudent(StudentEntity student);
 
-    @Query("SELECT * FROM students WHERE studentId = :studentId")
-    StudentEntity getStudentById(String studentId);
+    @Query("SELECT * FROM users WHERE username = :username")
+    StudentEntity getStudentById(String username);
 
-    @Query("SELECT * FROM students")
+    @Query("SELECT * FROM users")
     LiveData<List<StudentEntity>> getAllStudentsLive();
 }
