@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
 public class LecturerRegisterActivity extends AppCompatActivity {
 
     private EditText etFullName;
@@ -20,14 +23,10 @@ public class LecturerRegisterActivity extends AppCompatActivity {
 
     private Button btnRegister;
 
-    private DatabaseHelper dbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lecturer_register);
-
-        dbHelper = new DatabaseHelper(this);
 
         etFullName = findViewById(R.id.etFullName);
         etEmployeeNo = findViewById(R.id.etEmployeeNo);
@@ -40,7 +39,6 @@ public class LecturerRegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         btnRegister.setOnClickListener(v -> {
-
             String fullName = etFullName.getText().toString().trim();
             String employeeNo = etEmployeeNo.getText().toString().trim();
             String department = etDepartment.getText().toString().trim();
@@ -62,57 +60,53 @@ public class LecturerRegisterActivity extends AppCompatActivity {
                         "Please fill all fields",
                         Toast.LENGTH_SHORT
                 ).show();
-
                 return;
             }
 
             if (!password.equals(confirm)) {
-
                 Toast.makeText(
                         LecturerRegisterActivity.this,
                         "Passwords do not match",
                         Toast.LENGTH_SHORT
                 ).show();
-
                 return;
             }
 
-            boolean result = dbHelper.insertUser(
-                    employeeNo,
-                    fullName,
-                    employeeNo,
-                    email,
-                    password,
-                    department,
-                    "LECTURER",
-                    "Lecturer"
-            );
+            new Thread(() -> {
+                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                StudentEntity existing = db.studentDao().getStudentById(employeeNo);
 
-            if (result) {
+                if (existing != null) {
+                    runOnUiThread(() -> Toast.makeText(
+                            LecturerRegisterActivity.this,
+                            "Registration Failed or User Exists",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                } else {
+                    StudentEntity newLecturer = new StudentEntity(
+                            employeeNo,
+                            fullName,
+                            phone,
+                            email,
+                            password,
+                            department,
+                            "",
+                            "Lecturer"
+                    );
+                    db.studentDao().insertStudent(newLecturer);
 
-                Toast.makeText(
-                        LecturerRegisterActivity.this,
-                        "Lecturer Registered Successfully",
-                        Toast.LENGTH_SHORT
-                ).show();
-
-                startActivity(
-                        new Intent(
+                    runOnUiThread(() -> {
+                        Toast.makeText(
                                 LecturerRegisterActivity.this,
-                                MainActivity.class
-                        )
-                );
+                                "Lecturer Registered Successfully",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                finish();
-
-            } else {
-
-                Toast.makeText(
-                        LecturerRegisterActivity.this,
-                        "Registration Failed or User Exists",
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
+                        startActivity(new Intent(LecturerRegisterActivity.this, MainActivity.class));
+                        finish();
+                    });
+                }
+            }).start();
         });
     }
 }

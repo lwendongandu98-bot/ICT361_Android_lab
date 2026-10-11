@@ -13,6 +13,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudentRegisterActivity extends AppCompatActivity {
@@ -22,16 +28,11 @@ public class StudentRegisterActivity extends AppCompatActivity {
     private Button btnRegisterSubmit;
     private TextView tvBackToLogin;
 
-    private DatabaseHelper dbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_register);
 
-        dbHelper = new DatabaseHelper(this);
-
-        // Bind exact layout XML IDs
         etRegName = findViewById(R.id.etRegName);
         etRegUsername = findViewById(R.id.etRegUsername);
         etRegStudentNum = findViewById(R.id.etRegStudentNum);
@@ -43,59 +44,55 @@ public class StudentRegisterActivity extends AppCompatActivity {
         btnRegisterSubmit = findViewById(R.id.btnRegisterSubmit);
         tvBackToLogin = findViewById(R.id.tvBackToLogin);
 
-        // Fetch lecturer-created courses and groups dynamically
-        loadCoursesFromDatabase();
-        loadGroupsFromDatabase();
+        loadSpinnersData();
 
-        // Registration button handler
         btnRegisterSubmit.setOnClickListener(v -> handleRegistration());
 
-        // Navigation back to login screen
         if (tvBackToLogin != null) {
             tvBackToLogin.setOnClickListener(v -> finish());
         }
     }
 
-    private void loadCoursesFromDatabase() {
-        List<String> courseList = dbHelper.getAllCourses();
+    private void loadSpinnersData() {
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            List<CourseEntity> courses = db.courseDao().getAllCourses();
+            List<LabGroupEntity> groups = db.labGroupDao().getAllGroups();
 
-        if (courseList == null || courseList.isEmpty()) {
-            courseList.add("No courses added by lecturer yet");
-        } else {
-            courseList.add(0, "Select Program / Course");
-        }
+            List<String> courseList = new ArrayList<>();
+            if (courses != null) {
+                for (CourseEntity c : courses) {
+                    if (c.getCourseName() != null) courseList.add(c.getCourseName());
+                }
+            }
+            if (courseList.isEmpty()) {
+                courseList.add("No courses added by lecturer yet");
+            } else {
+                courseList.add(0, "Select Program / Course");
+            }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                courseList
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spRegProgram.setAdapter(adapter);
-    }
+            List<String> groupList = new ArrayList<>();
+            if (groups != null) {
+                for (LabGroupEntity g : groups) {
+                    if (g.getGroupName() != null) groupList.add(g.getGroupName());
+                }
+            }
+            if (groupList.isEmpty()) {
+                groupList.add("No lab groups available");
+            } else {
+                groupList.add(0, "Select Lab Group");
+            }
 
-    private void loadGroupsFromDatabase() {
-        // Fetch groups with capacity under 15 members
-        List<String> groupList = dbHelper.getAvailableLabGroups();
+            runOnUiThread(() -> {
+                ArrayAdapter<String> courseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courseList);
+                courseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spRegProgram.setAdapter(courseAdapter);
 
-        // Fallback to all groups if available groups query is empty
-        if (groupList == null || groupList.isEmpty()) {
-            groupList = dbHelper.getAllGroups();
-        }
-
-        if (groupList == null || groupList.isEmpty()) {
-            groupList.add("No lab groups available");
-        } else {
-            groupList.add(0, "Select Lab Group");
-        }
-
-        ArrayAdapter<String> groupAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                groupList
-        );
-        groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spRegGroup.setAdapter(groupAdapter);
+                ArrayAdapter<String> groupAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, groupList);
+                groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spRegGroup.setAdapter(groupAdapter);
+            });
+        }).start();
     }
 
     private void handleRegistration() {
@@ -109,7 +106,6 @@ public class StudentRegisterActivity extends AppCompatActivity {
         String selectedProgram = spRegProgram.getSelectedItem() != null ? spRegProgram.getSelectedItem().toString() : "";
         String selectedGroup = spRegGroup.getSelectedItem() != null ? spRegGroup.getSelectedItem().toString() : "";
 
-        // Form Validations
         if (name.isEmpty() || username.isEmpty() || studentNum.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
             return;
@@ -130,28 +126,33 @@ public class StudentRegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Insert new student user into database
-        boolean isInserted = dbHelper.insertUser(username, name, studentNum, email, password, selectedProgram, selectedGroup, "Student");
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            StudentEntity existing = db.studentDao().getStudentById(username);
 
-        if (isInserted) {
-            // Save Session
-            SessionManager sessionManager = new SessionManager(this);
-            sessionManager.createLoginSession(username, "Student");
+            if (existing != null) {
+                runOnUiThread(() -> Toast.makeText(this, "Registration failed. Username may already be taken.", Toast.LENGTH_SHORT).show());
+            } else {
+                StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, selectedProgram, selectedGroup, "Student");
+                db.studentDao().insertStudent(newStudent);
 
-            SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("username", username);
-            editor.apply();
+                runOnUiThread(() -> {
+                    SessionManager sessionManager = new SessionManager(this);
+                    sessionManager.createLoginSession(username, "Student");
 
-            Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                    SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString("username", username);
+                    editor.apply();
 
-            // Redirect to Student Dashboard
-            Intent intent = new Intent(StudentRegisterActivity.this, StudentHomeActivity.class);
-            intent.putExtra("username", username);
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(this, "Registration failed. Username may already be taken.", Toast.LENGTH_SHORT).show();
-        }
+                    Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+
+                    Intent intent = new Intent(StudentRegisterActivity.this, StudentHomeActivity.class);
+                    intent.putExtra("username", username);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }).start();
     }
 }

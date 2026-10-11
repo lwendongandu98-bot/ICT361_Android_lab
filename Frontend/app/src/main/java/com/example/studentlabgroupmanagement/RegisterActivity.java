@@ -13,6 +13,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -22,14 +28,10 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btnRegister;
     private TextView tvLogin;
 
-    private DatabaseHelper dbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
-        dbHelper = new DatabaseHelper(this);
 
         etUsername = findViewById(R.id.etUsername);
         etName = findViewById(R.id.etName);
@@ -41,11 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
 
-        // Populate Program/Course Spinner dynamically from DB
-        loadCourseSpinner();
-
-        // Populate Lab Group Spinner dynamically from DB
-        loadLabGroupSpinner();
+        loadSpinnersData();
 
         btnRegister.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
@@ -68,27 +66,32 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            boolean isInserted = dbHelper.insertUser(username, name, studentNum, email, password, program, labGroup, role);
+            new Thread(() -> {
+                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                StudentEntity existing = db.studentDao().getStudentById(username);
 
-            if (isInserted) {
-                // Save session so StudentHomeActivity picks up the details immediately
-                SessionManager sessionManager = new SessionManager(RegisterActivity.this);
-                sessionManager.createLoginSession(username, role);
+                if (existing != null) {
+                    runOnUiThread(() -> Toast.makeText(RegisterActivity.this, "Registration Failed. Username may already exist.", Toast.LENGTH_SHORT).show());
+                } else {
+                    StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, program, labGroup, role);
+                    db.studentDao().insertStudent(newStudent);
 
-                SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("username", username);
-                editor.apply();
+                    runOnUiThread(() -> {
+                        SessionManager sessionManager = new SessionManager(RegisterActivity.this);
+                        sessionManager.createLoginSession(username, role);
 
-                Toast.makeText(RegisterActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                        sharedPref.edit().putString("username", username).apply();
 
-                Intent intent = new Intent(RegisterActivity.this, StudentHomeActivity.class);
-                intent.putExtra("username", username);
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(RegisterActivity.this, "Registration Failed. Username may already exist.", Toast.LENGTH_SHORT).show();
-            }
+                        Toast.makeText(RegisterActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(RegisterActivity.this, StudentHomeActivity.class);
+                        intent.putExtra("username", username);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+            }).start();
         });
 
         if (tvLogin != null) {
@@ -96,35 +99,41 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void loadCourseSpinner() {
-        List<String> courseList = dbHelper.getAllCourses();
+    private void loadSpinnersData() {
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            List<CourseEntity> courses = db.courseDao().getAllCourses();
+            List<LabGroupEntity> groups = db.labGroupDao().getAllGroups();
 
-        if (courseList.isEmpty()) {
-            courseList.add("No courses available");
-        }
+            List<String> courseList = new ArrayList<>();
+            if (courses != null) {
+                for (CourseEntity c : courses) {
+                    if (c.getCourseName() != null) courseList.add(c.getCourseName());
+                }
+            }
+            if (courseList.isEmpty()) {
+                courseList.add("No courses available");
+            }
 
-        ArrayAdapter<String> courseAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                courseList
-        );
-        courseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerProgram.setAdapter(courseAdapter);
-    }
+            List<String> groupList = new ArrayList<>();
+            if (groups != null) {
+                for (LabGroupEntity g : groups) {
+                    if (g.getGroupName() != null) groupList.add(g.getGroupName());
+                }
+            }
+            if (groupList.isEmpty()) {
+                groupList.add("Unassigned");
+            }
 
-    private void loadLabGroupSpinner() {
-        List<String> groupList = dbHelper.getAvailableLabGroups();
+            runOnUiThread(() -> {
+                ArrayAdapter<String> courseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courseList);
+                courseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerProgram.setAdapter(courseAdapter);
 
-        if (groupList.isEmpty()) {
-            groupList.add("Unassigned");
-        }
-
-        ArrayAdapter<String> groupAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                groupList
-        );
-        groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerGroup.setAdapter(groupAdapter);
+                ArrayAdapter<String> groupAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, groupList);
+                groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerGroup.setAdapter(groupAdapter);
+            });
+        }).start();
     }
 }

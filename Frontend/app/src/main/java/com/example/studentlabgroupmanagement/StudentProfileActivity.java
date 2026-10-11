@@ -3,7 +3,6 @@ package com.example.studentlabgroupmanagement;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
@@ -17,6 +16,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
 public class StudentProfileActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
@@ -25,7 +27,6 @@ public class StudentProfileActivity extends AppCompatActivity {
     private EditText etStudentName, etStudentEmail, etStudentProgram, etStudentAge;
     private Button btnUpdateProfile, btnBackToDashboard;
 
-    private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
     private String currentUsername;
     private Uri selectedImageUri;
@@ -37,10 +38,8 @@ public class StudentProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile);
 
-        dbHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
 
-        // Retrieve active username
         currentUsername = getIntent().getStringExtra("USERNAME");
         if (currentUsername == null || currentUsername.trim().isEmpty()) {
             currentUsername = sessionManager.getUsername();
@@ -60,7 +59,6 @@ public class StudentProfileActivity extends AppCompatActivity {
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
         btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
 
-        // Image picker launcher for internal storage
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -88,7 +86,6 @@ public class StudentProfileActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
         btnBackToDashboard.setOnClickListener(v -> finish());
-
         btnUpdateProfile.setOnClickListener(v -> updateStudentDetails());
     }
 
@@ -109,37 +106,30 @@ public class StudentProfileActivity extends AppCompatActivity {
 
     private void loadStudentDetails() {
         if (currentUsername != null && !currentUsername.trim().isEmpty()) {
-            Cursor cursor = dbHelper.getUserProfile(currentUsername.trim());
-            if (cursor != null) {
-                if (cursor.moveToFirst()) {
-                    int nameIdx = cursor.getColumnIndex("student_name");
-                    int emailIdx = cursor.getColumnIndex("email");
-                    int progIdx = cursor.getColumnIndex("program");
-                    int ageIdx = cursor.getColumnIndex("age");
+            final String targetUser = currentUsername.trim();
+            new Thread(() -> {
+                StudentEntity student = AppDatabase.getInstance(getApplicationContext())
+                        .studentDao()
+                        .getStudentById(targetUser);
 
-                    String name = (nameIdx != -1 && !cursor.isNull(nameIdx)) ? cursor.getString(nameIdx) : "";
-                    String email = (emailIdx != -1 && !cursor.isNull(emailIdx)) ? cursor.getString(emailIdx) : "";
-                    String program = (progIdx != -1 && !cursor.isNull(progIdx)) ? cursor.getString(progIdx) : "";
-                    String age = (ageIdx != -1 && !cursor.isNull(ageIdx)) ? cursor.getString(ageIdx) : "";
+                runOnUiThread(() -> {
+                    if (student != null) {
+                        if (student.getName() != null) etStudentName.setText(student.getName());
+                        if (student.getEmail() != null) etStudentEmail.setText(student.getEmail());
+                        if (student.getProgram() != null) etStudentProgram.setText(student.getProgram());
+                    }
 
-                    etStudentName.setText(name);
-                    etStudentEmail.setText(email);
-                    etStudentProgram.setText(program);
-                    etStudentAge.setText(age);
-                }
-                cursor.close();
-            }
-
-            // Load saved image if available
-            SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-            String savedUriStr = prefs.getString("profile_image_" + currentUsername.trim(), null);
-            if (savedUriStr != null) {
-                try {
-                    imgProfile.setImageURI(Uri.parse(savedUriStr));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+                    SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                    String savedUriStr = prefs.getString("profile_image_" + targetUser, null);
+                    if (savedUriStr != null) {
+                        try {
+                            imgProfile.setImageURI(Uri.parse(savedUriStr));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }).start();
         }
     }
 
@@ -147,19 +137,31 @@ public class StudentProfileActivity extends AppCompatActivity {
         String name = etStudentName.getText().toString().trim();
         String email = etStudentEmail.getText().toString().trim();
         String program = etStudentProgram.getText().toString().trim();
-        String age = etStudentAge.getText().toString().trim();
 
         if (name.isEmpty()) {
             etStudentName.setError("Name cannot be empty");
             return;
         }
 
-        boolean success = dbHelper.updateUserProfile(currentUsername, name, email, program, age);
-        if (success) {
-            Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show();
+        if (currentUsername != null && !currentUsername.trim().isEmpty()) {
+            final String targetUser = currentUsername.trim();
+            new Thread(() -> {
+                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                StudentEntity student = db.studentDao().getStudentById(targetUser);
+                if (student != null) {
+                    student.setName(name);
+                    student.setEmail(email);
+                    student.setProgram(program);
+                    db.studentDao().updateStudent(student);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show());
+                }
+            }).start();
         }
     }
 }

@@ -7,12 +7,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntity;
+
 import java.util.List;
 
 public class StudentAnnouncementsActivity extends AppCompatActivity {
 
     private RecyclerView rvAnnouncements;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +31,11 @@ public class StudentAnnouncementsActivity extends AppCompatActivity {
         }
 
         rvAnnouncements = findViewById(R.id.rvStudentAnnouncements);
-        dbHelper = new DatabaseHelper(this);
-
         rvAnnouncements.setLayoutManager(new LinearLayoutManager(this));
 
-        List<Announcement> list = dbHelper.getAllAnnouncements();
-        rvAnnouncements.setAdapter(new AnnouncementAdapter(list));
+        new Thread(() -> {
+            List<AnnouncementEntity> list = AppDatabase.getInstance(getApplicationContext()).announcementDao().getAllAnnouncements();
+            runOnUiThread(() -> rvAnnouncements.setAdapter(new AnnouncementAdapter(list)));
+        }).start();
     }
 }

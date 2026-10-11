@@ -11,14 +11,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntity;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AnnouncementsActivity extends AppCompatActivity {
 
     private EditText etTitle, etMessage;
     private Button btnPost;
     private RecyclerView rvAnnouncements;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +43,6 @@ public class AnnouncementsActivity extends AppCompatActivity {
         etMessage = findViewById(R.id.etAnnouncementMessage);
         btnPost = findViewById(R.id.btnPostAnnouncement);
         rvAnnouncements = findViewById(R.id.rvAnnouncements);
-        dbHelper = new DatabaseHelper(this);
 
         rvAnnouncements.setLayoutManager(new LinearLayoutManager(this));
 
@@ -56,18 +60,35 @@ public class AnnouncementsActivity extends AppCompatActivity {
             return;
         }
 
-        if (dbHelper.saveAnnouncement(title, message)) {
-            Toast.makeText(this, "Announcement posted successfully!", Toast.LENGTH_SHORT).show();
-            etTitle.setText("");
-            etMessage.setText("");
-            loadAnnouncements();
-        } else {
-            Toast.makeText(this, "Failed to post announcement.", Toast.LENGTH_SHORT).show();
-        }
+        // Perform Room insertion on a background thread
+        new Thread(() -> {
+            try {
+                String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+                AnnouncementEntity announcement = new AnnouncementEntity(title, message, currentDate);
+
+                AppDatabase.getInstance(getApplicationContext()).announcementDao().insertAnnouncement(announcement);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Announcement posted successfully!", Toast.LENGTH_SHORT).show();
+                    etTitle.setText("");
+                    etMessage.setText("");
+                    loadAnnouncements();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Failed to post announcement: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        }).start();
     }
 
     private void loadAnnouncements() {
-        List<Announcement> list = dbHelper.getAllAnnouncements();
-        rvAnnouncements.setAdapter(new AnnouncementAdapter(list));
+        new Thread(() -> {
+            List<AnnouncementEntity> list = AppDatabase.getInstance(getApplicationContext()).announcementDao().getAllAnnouncements();
+
+            runOnUiThread(() -> {
+                rvAnnouncements.setAdapter(new AnnouncementAdapter(list));
+            });
+        }).start();
     }
 }

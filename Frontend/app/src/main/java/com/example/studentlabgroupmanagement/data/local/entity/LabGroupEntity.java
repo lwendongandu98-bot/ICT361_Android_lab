@@ -1,5 +1,6 @@
 package com.example.studentlabgroupmanagement.data.local.entity;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -7,7 +8,10 @@ import androidx.room.PrimaryKey;
 public class LabGroupEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @ColumnInfo(name = "group_name")
     private String groupName;
+
     private String description;
 
     // Default constructor required by Room

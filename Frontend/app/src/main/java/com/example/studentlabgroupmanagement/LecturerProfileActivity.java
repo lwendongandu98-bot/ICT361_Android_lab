@@ -3,7 +3,6 @@ package com.example.studentlabgroupmanagement;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
@@ -16,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
 import com.google.android.material.imageview.ShapeableImageView;
 
 public class LecturerProfileActivity extends AppCompatActivity {
@@ -30,19 +31,15 @@ public class LecturerProfileActivity extends AppCompatActivity {
     private Button btnUpdateProfile;
     private Button btnBack;
 
-    private DatabaseHelper databaseHelper;
     private SessionManager sessionManager;
     private String username;
     private Uri selectedImageUri;
 
-    // Image Picker Launcher
     private final ActivityResultLauncher<String> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
                     imgProfile.setImageURI(uri);
-
-                    // Persist Uri permission across app restarts
                     try {
                         getContentResolver().takePersistableUriPermission(
                                 uri,
@@ -59,10 +56,8 @@ public class LecturerProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lecturer_profile);
 
-        databaseHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
 
-        // Toolbar setup
         Toolbar toolbar = findViewById(R.id.toolbarProfile);
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -82,7 +77,6 @@ public class LecturerProfileActivity extends AppCompatActivity {
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
         btnBack = findViewById(R.id.btnBack);
 
-        // Retrieve active username from Intent or SessionManager fallback
         username = getIntent().getStringExtra("USERNAME");
         if (username == null || username.isEmpty()) {
             username = sessionManager.getUsername();
@@ -90,16 +84,15 @@ public class LecturerProfileActivity extends AppCompatActivity {
 
         loadLecturerData();
 
-        // Gallery picker launcher call
         if (btnUploadImage != null) {
             btnUploadImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
         }
 
-        // Save updated profile details
         btnUpdateProfile.setOnClickListener(v -> {
             String name = etName.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
             String department = etDepartment.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
 
             if (name.isEmpty() || email.isEmpty()) {
                 Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
@@ -107,19 +100,30 @@ public class LecturerProfileActivity extends AppCompatActivity {
             }
 
             if (username != null && !username.isEmpty()) {
-                boolean updated = databaseHelper.updateLecturerProfile(username, name, email, department);
+                new Thread(() -> {
+                    AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                    StudentEntity lecturer = db.studentDao().getStudentById(username);
 
-                if (selectedImageUri != null) {
-                    SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
-                    prefs.edit().putString("profile_image_" + username, selectedImageUri.toString()).apply();
-                }
+                    if (lecturer != null) {
+                        lecturer.setName(name);
+                        lecturer.setEmail(email);
+                        lecturer.setProgram(department);
+                        lecturer.setStudentNum(phone);
+                        db.studentDao().updateStudent(lecturer);
 
-                if (updated) {
-                    Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show();
-                }
+                        if (selectedImageUri != null) {
+                            SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
+                            prefs.edit().putString("profile_image_" + username, selectedImageUri.toString()).apply();
+                        }
+
+                        runOnUiThread(() -> {
+                            Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show());
+                    }
+                }).start();
             } else {
                 Toast.makeText(this, "No active user session found", Toast.LENGTH_SHORT).show();
             }
@@ -130,42 +134,31 @@ public class LecturerProfileActivity extends AppCompatActivity {
 
     private void loadLecturerData() {
         if (username != null && !username.isEmpty()) {
-            Cursor cursor = databaseHelper.getLecturerProfile(username);
+            new Thread(() -> {
+                StudentEntity lecturer = AppDatabase.getInstance(getApplicationContext())
+                        .studentDao()
+                        .getStudentById(username);
 
-            if (cursor != null) {
-                if (cursor.moveToFirst()) {
-                    int nameIdx = cursor.getColumnIndex("name");
-                    int emailIdx = cursor.getColumnIndex("email");
-                    int programIdx = cursor.getColumnIndex("program");
-                    int phoneIdx = cursor.getColumnIndex("student_num");
+                runOnUiThread(() -> {
+                    if (lecturer != null) {
+                        if (lecturer.getName() != null) etName.setText(lecturer.getName());
+                        if (lecturer.getEmail() != null) etEmail.setText(lecturer.getEmail());
+                        if (lecturer.getProgram() != null) etDepartment.setText(lecturer.getProgram());
+                        if (lecturer.getStudentNum() != null) etPhone.setText(lecturer.getStudentNum());
+                    }
 
-                    if (nameIdx != -1 && !cursor.isNull(nameIdx)) {
-                        etName.setText(cursor.getString(nameIdx));
+                    SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
+                    String savedUriStr = prefs.getString("profile_image_" + username, null);
+                    if (savedUriStr != null) {
+                        selectedImageUri = Uri.parse(savedUriStr);
+                        try {
+                            imgProfile.setImageURI(selectedImageUri);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                    if (emailIdx != -1 && !cursor.isNull(emailIdx)) {
-                        etEmail.setText(cursor.getString(emailIdx));
-                    }
-                    if (programIdx != -1 && !cursor.isNull(programIdx)) {
-                        etDepartment.setText(cursor.getString(programIdx));
-                    }
-                    if (phoneIdx != -1 && !cursor.isNull(phoneIdx)) {
-                        etPhone.setText(cursor.getString(phoneIdx));
-                    }
-                }
-                cursor.close();
-            }
-
-            // Load saved profile image URI
-            SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
-            String savedUriStr = prefs.getString("profile_image_" + username, null);
-            if (savedUriStr != null) {
-                selectedImageUri = Uri.parse(savedUriStr);
-                try {
-                    imgProfile.setImageURI(selectedImageUri);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+                });
+            }).start();
         }
     }
 }

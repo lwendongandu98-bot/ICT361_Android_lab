@@ -1,7 +1,6 @@
 package com.example.studentlabgroupmanagement;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,25 +14,26 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 public class SubmissionsActivity extends AppCompatActivity {
 
     private LinearLayout containerSubmissions;
     private TextView tvNoSubmissions;
     private Button btnOpenCheckedLabs;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submissions);
-
-        dbHelper = new DatabaseHelper(this);
 
         containerSubmissions = findViewById(R.id.containerSubmissions);
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions);
@@ -56,81 +56,77 @@ public class SubmissionsActivity extends AppCompatActivity {
     }
 
     private void loadSubmissions() {
-        containerSubmissions.removeAllViews();
-        Cursor cursor = dbHelper.getPendingSubmissions();
+        new Thread(() -> {
+            List<SubmissionEntity> submissions = AppDatabase.getInstance(getApplicationContext())
+                    .submissionDao()
+                    .getPendingSubmissions();
 
-        if (cursor == null || cursor.getCount() == 0) {
-            if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.VISIBLE);
-            if (cursor != null) cursor.close();
-            return;
-        }
+            runOnUiThread(() -> {
+                containerSubmissions.removeAllViews();
+                if (submissions == null || submissions.isEmpty()) {
+                    if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.VISIBLE);
+                    return;
+                }
 
-        if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.GONE);
-        LayoutInflater inflater = LayoutInflater.from(this);
+                if (tvNoSubmissions != null) tvNoSubmissions.setVisibility(View.GONE);
+                LayoutInflater inflater = LayoutInflater.from(this);
 
-        while (cursor.moveToNext()) {
-            int submissionId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-            String studentNumber = cursor.getString(cursor.getColumnIndexOrThrow("student_number"));
-            String submittedAt = cursor.getString(cursor.getColumnIndexOrThrow("submitted_at"));
+                for (SubmissionEntity sub : submissions) {
+                    int submissionId = sub.getId();
+                    String studentNumber = sub.getStudentNumber();
+                    String submittedAt = sub.getSubmittedAt();
+                    String filePath = sub.getFilePath();
 
-            String filePath = "";
-            int pathIndex = cursor.getColumnIndex("file_path");
-            if (pathIndex != -1) {
-                filePath = cursor.getString(pathIndex);
-            }
+                    View card = inflater.inflate(R.layout.item_submission_card, containerSubmissions, false);
 
-            View card = inflater.inflate(R.layout.item_submission_card, containerSubmissions, false);
+                    TextView txtStudentNumber = card.findViewById(R.id.txtStudentNumber);
+                    TextView txtSubmittedAt = card.findViewById(R.id.txtSubmittedAt);
+                    Button btnViewSubmission = card.findViewById(R.id.btnViewSubmission);
+                    Button btnDownloadSubmission = card.findViewById(R.id.btnDownloadSubmission);
+                    Button btnMoveToChecked = card.findViewById(R.id.btnMoveToChecked);
 
-            TextView txtStudentNumber = card.findViewById(R.id.txtStudentNumber);
-            TextView txtSubmittedAt = card.findViewById(R.id.txtSubmittedAt);
-            Button btnViewSubmission = card.findViewById(R.id.btnViewSubmission);
-            Button btnDownloadSubmission = card.findViewById(R.id.btnDownloadSubmission);
-            Button btnMoveToChecked = card.findViewById(R.id.btnMoveToChecked);
+                    txtStudentNumber.setText("Student: " + studentNumber);
+                    txtSubmittedAt.setText("Submitted: " + submittedAt);
 
-            txtStudentNumber.setText("Student: " + studentNumber);
-            txtSubmittedAt.setText("Submitted: " + submittedAt);
-
-            final String finalFilePath = filePath;
-
-            // View File Option
-            if (btnViewSubmission != null) {
-                btnViewSubmission.setOnClickListener(v -> {
-                    if (finalFilePath != null && !finalFilePath.trim().isEmpty()) {
-                        openSubmissionFile(finalFilePath);
-                    } else {
-                        Toast.makeText(SubmissionsActivity.this, "No file attached", Toast.LENGTH_SHORT).show();
+                    if (btnViewSubmission != null) {
+                        btnViewSubmission.setOnClickListener(v -> {
+                            if (filePath != null && !filePath.trim().isEmpty()) {
+                                openSubmissionFile(filePath);
+                            } else {
+                                Toast.makeText(SubmissionsActivity.this, "No file attached", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            // Download File Option
-            if (btnDownloadSubmission != null) {
-                btnDownloadSubmission.setOnClickListener(v -> {
-                    if (finalFilePath != null && !finalFilePath.trim().isEmpty()) {
-                        downloadFileToStorage(finalFilePath);
-                    } else {
-                        Toast.makeText(SubmissionsActivity.this, "No file to download", Toast.LENGTH_SHORT).show();
+                    if (btnDownloadSubmission != null) {
+                        btnDownloadSubmission.setOnClickListener(v -> {
+                            if (filePath != null && !filePath.trim().isEmpty()) {
+                                downloadFileToStorage(filePath);
+                            } else {
+                                Toast.makeText(SubmissionsActivity.this, "No file to download", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                });
-            }
 
-            // Move to Checked Option
-            if (btnMoveToChecked != null) {
-                btnMoveToChecked.setOnClickListener(v -> {
-                    boolean success = dbHelper.markSubmissionAsChecked(submissionId);
-                    if (success) {
-                        Toast.makeText(SubmissionsActivity.this, "Submission marked as checked", Toast.LENGTH_SHORT).show();
-                        loadSubmissions();
-                    } else {
-                        Toast.makeText(SubmissionsActivity.this, "Failed to update submission", Toast.LENGTH_SHORT).show();
+                    if (btnMoveToChecked != null) {
+                        btnMoveToChecked.setOnClickListener(v -> {
+                            new Thread(() -> {
+                                AppDatabase.getInstance(getApplicationContext())
+                                        .submissionDao()
+                                        .markSubmissionAsChecked(submissionId);
+
+                                runOnUiThread(() -> {
+                                    Toast.makeText(SubmissionsActivity.this, "Submission marked as checked", Toast.LENGTH_SHORT).show();
+                                    loadSubmissions();
+                                });
+                            }).start();
+                        });
                     }
-                });
-            }
 
-            containerSubmissions.addView(card);
-        }
-
-        cursor.close();
+                    containerSubmissions.addView(card);
+                }
+            });
+        }).start();
     }
 
     private void openSubmissionFile(String filePathOrUri) {
@@ -149,9 +145,7 @@ public class SubmissionsActivity extends AppCompatActivity {
             }
 
             String mimeType = getContentResolver().getType(fileUri);
-            if (mimeType == null) {
-                mimeType = "*/*";
-            }
+            if (mimeType == null) mimeType = "*/*";
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(fileUri, mimeType);
@@ -174,9 +168,7 @@ public class SubmissionsActivity extends AppCompatActivity {
             }
 
             File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            if (!downloadsFolder.exists()) {
-                downloadsFolder.mkdirs();
-            }
+            if (!downloadsFolder.exists()) downloadsFolder.mkdirs();
 
             File destFile = new File(downloadsFolder, "Downloaded_" + srcFile.getName());
 

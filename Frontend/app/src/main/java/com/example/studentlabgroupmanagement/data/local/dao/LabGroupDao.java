@@ -15,6 +15,15 @@ public interface LabGroupDao {
     @Query("SELECT * FROM lab_groups")
     List<LabGroupEntity> getAllGroups();
 
+    @Query("SELECT * FROM lab_groups WHERE group_name = :groupName")
+    LabGroupEntity getGroupByName(String groupName);
+
+    @Query("SELECT * FROM lab_groups WHERE group_name LIKE :query")
+    List<LabGroupEntity> searchGroups(String query);
+
     @Query("DELETE FROM lab_groups WHERE id = :groupId")
     void deleteGroup(int groupId);
+
+    @Query("DELETE FROM lab_groups WHERE group_name = :groupName")
+    void deleteGroupByName(String groupName);
 }

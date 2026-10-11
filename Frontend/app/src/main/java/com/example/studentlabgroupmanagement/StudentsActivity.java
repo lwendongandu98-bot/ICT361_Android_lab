@@ -4,16 +4,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudentsActivity extends AppCompatActivity {
@@ -21,7 +21,6 @@ public class StudentsActivity extends AppCompatActivity {
     private RecyclerView rvStudents;
     private TextView tvEmpty;
     private SearchView searchViewStudents;
-    private DatabaseHelper dbHelper;
     private StudentAdapter adapter;
 
     @Override
@@ -41,13 +40,11 @@ public class StudentsActivity extends AppCompatActivity {
         rvStudents = findViewById(R.id.rvStudents);
         tvEmpty = findViewById(R.id.tvEmpty);
         searchViewStudents = findViewById(R.id.searchViewStudents);
-        dbHelper = new DatabaseHelper(this);
 
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
 
         loadStudents();
 
-        // Search bar query listener
         searchViewStudents.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -68,31 +65,30 @@ public class StudentsActivity extends AppCompatActivity {
     }
 
     private void loadStudents() {
-        List<Student> students = dbHelper.getAllStudents();
+        new Thread(() -> {
+            List<StudentEntity> entities = AppDatabase.getInstance(getApplicationContext())
+                    .studentDao()
+                    .getAllStudents();
 
-        if (students.isEmpty()) {
-            tvEmpty.setVisibility(View.VISIBLE);
-            rvStudents.setVisibility(View.GONE);
-        } else {
-            tvEmpty.setVisibility(View.GONE);
-            rvStudents.setVisibility(View.VISIBLE);
-            adapter = new StudentAdapter(students);
-            rvStudents.setAdapter(adapter);
-        }
-    }
+            List<Student> students = new ArrayList<>();
+            if (entities != null) {
+                for (StudentEntity e : entities) {
+                    // Fixed to match the 2 arguments expected by the Student model constructor
+                    students.add(new Student(e.getName(), e.getStudentNum()));
+                }
+            }
 
-    public static class MainActivity extends AppCompatActivity {
-
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            EdgeToEdge.enable(this);
-            setContentView(R.layout.activity_main);
-            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
+            runOnUiThread(() -> {
+                if (students.isEmpty()) {
+                    tvEmpty.setVisibility(View.VISIBLE);
+                    rvStudents.setVisibility(View.GONE);
+                } else {
+                    tvEmpty.setVisibility(View.GONE);
+                    rvStudents.setVisibility(View.VISIBLE);
+                    adapter = new StudentAdapter(students);
+                    rvStudents.setAdapter(adapter);
+                }
             });
-        }
+        }).start();
     }
 }

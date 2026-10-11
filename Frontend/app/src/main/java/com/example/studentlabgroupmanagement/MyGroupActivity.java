@@ -1,6 +1,5 @@
 package com.example.studentlabgroupmanagement;
 
-import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,12 +8,16 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
+import java.util.List;
+
 public class MyGroupActivity extends AppCompatActivity {
 
     private TextView tvGroupNameHeader, tvMemberCountHeader, tvNoMembers;
     private LinearLayout containerGroupMembers;
 
-    private DatabaseHelper dbHelper;
     private SessionManager session;
 
     @Override
@@ -27,7 +30,6 @@ public class MyGroupActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("My Group");
         }
 
-        dbHelper = new DatabaseHelper(this);
         session = new SessionManager(this);
 
         tvGroupNameHeader = findViewById(R.id.tvGroupNameHeader);
@@ -40,53 +42,59 @@ public class MyGroupActivity extends AppCompatActivity {
 
     private void loadGroupMembers() {
         String loggedInUsername = session.getUsername();
-        String groupName = dbHelper.getStudentGroup(loggedInUsername);
 
-        if (groupName.equals("Unassigned") || groupName.isEmpty()) {
-            tvGroupNameHeader.setText("Unassigned Group");
-            tvMemberCountHeader.setText("Members Registered: 0 / 15");
-            tvNoMembers.setVisibility(View.VISIBLE);
-            tvNoMembers.setText("You are currently not assigned to any group.");
-            return;
-        }
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            StudentEntity student = db.studentDao().getStudentById(loggedInUsername);
+            String groupName = (student != null && student.getLabGroup() != null) ? student.getLabGroup() : "Unassigned";
 
-        tvGroupNameHeader.setText(groupName);
+            if (groupName.equals("Unassigned") || groupName.isEmpty()) {
+                runOnUiThread(() -> {
+                    tvGroupNameHeader.setText("Unassigned Group");
+                    tvMemberCountHeader.setText("Members Registered: 0 / 15");
+                    tvNoMembers.setVisibility(View.VISIBLE);
+                    tvNoMembers.setText("You are currently not assigned to any group.");
+                });
+                return;
+            }
 
-        Cursor cursor = dbHelper.getGroupMembers(groupName);
+            List<StudentEntity> members = db.studentDao().getStudentsByLabGroup(groupName);
 
-        if (cursor == null || cursor.getCount() == 0) {
-            tvMemberCountHeader.setText("Members Registered: 0 / 15");
-            tvNoMembers.setVisibility(View.VISIBLE);
-            if (cursor != null) cursor.close();
-            return;
-        }
+            runOnUiThread(() -> {
+                tvGroupNameHeader.setText(groupName);
 
-        int totalMembers = cursor.getCount();
-        tvMemberCountHeader.setText("Members Registered: " + totalMembers + " / 15");
-        tvNoMembers.setVisibility(View.GONE);
+                if (members == null || members.isEmpty()) {
+                    tvMemberCountHeader.setText("Members Registered: 0 / 15");
+                    tvNoMembers.setVisibility(View.VISIBLE);
+                    return;
+                }
 
-        containerGroupMembers.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(this);
+                int totalMembers = members.size();
+                tvMemberCountHeader.setText("Members Registered: " + totalMembers + " / 15");
+                tvNoMembers.setVisibility(View.GONE);
 
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndexOrThrow("student_name"));
-            String studentNum = cursor.getString(cursor.getColumnIndexOrThrow("student_number"));
-            String contact = cursor.getString(cursor.getColumnIndexOrThrow("contact"));
+                containerGroupMembers.removeAllViews();
+                LayoutInflater inflater = LayoutInflater.from(this);
 
-            View card = inflater.inflate(R.layout.item_group_member, containerGroupMembers, false);
+                for (StudentEntity member : members) {
+                    String name = member.getName();
+                    String studentNum = member.getStudentNum();
+                    String contact = member.getEmail();
 
-            TextView tvMemberName = card.findViewById(R.id.tvMemberName);
-            TextView tvMemberNum = card.findViewById(R.id.tvMemberNum);
-            TextView tvMemberContact = card.findViewById(R.id.tvMemberContact);
+                    View card = inflater.inflate(R.layout.item_group_member, containerGroupMembers, false);
 
-            tvMemberName.setText(name);
-            tvMemberNum.setText("Student No: " + studentNum);
-            tvMemberContact.setText("Contact: " + contact);
+                    TextView tvMemberName = card.findViewById(R.id.tvMemberName);
+                    TextView tvMemberNum = card.findViewById(R.id.tvMemberNum);
+                    TextView tvMemberContact = card.findViewById(R.id.tvMemberContact);
 
-            containerGroupMembers.addView(card);
-        }
+                    tvMemberName.setText(name != null ? name : "");
+                    tvMemberNum.setText("Student No: " + (studentNum != null ? studentNum : ""));
+                    tvMemberContact.setText("Email: " + (contact != null ? contact : ""));
 
-        cursor.close();
+                    containerGroupMembers.addView(card);
+                }
+            });
+        }).start();
     }
 
     @Override

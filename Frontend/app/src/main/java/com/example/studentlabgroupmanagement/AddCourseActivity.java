@@ -9,6 +9,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class AddCourseActivity extends AppCompatActivity {
@@ -19,7 +23,6 @@ public class AddCourseActivity extends AppCompatActivity {
     private Button btnAddCourse;
     private ListView listViewCourses;
 
-    private DatabaseHelper dbHelper;
     private ArrayAdapter<String> adapter;
     private List<String> courseList;
 
@@ -27,8 +30,6 @@ public class AddCourseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_course);
-
-        dbHelper = new DatabaseHelper(this);
 
         // Bind layout views
         etCourseCode = findViewById(R.id.etCourseCode);
@@ -47,21 +48,44 @@ public class AddCourseActivity extends AppCompatActivity {
                 return;
             }
 
-            boolean success = dbHelper.insertCourse(code, name);
-            if (success) {
-                Toast.makeText(AddCourseActivity.this, "Course added successfully!", Toast.LENGTH_SHORT).show();
-                etCourseCode.setText("");
-                etCourseName.setText("");
-                loadCourseList();
-            } else {
-                Toast.makeText(AddCourseActivity.this, "Failed to add course", Toast.LENGTH_SHORT).show();
-            }
+            // Perform Room database insertion on a background thread
+            new Thread(() -> {
+                try {
+                    CourseEntity course = new CourseEntity(code, name);
+                    AppDatabase.getInstance(getApplicationContext()).courseDao().insertCourse(course);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(AddCourseActivity.this, "Course added successfully!", Toast.LENGTH_SHORT).show();
+                        etCourseCode.setText("");
+                        etCourseName.setText("");
+                        loadCourseList();
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(AddCourseActivity.this, "Failed to add course: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }).start();
         });
     }
 
     private void loadCourseList() {
-        courseList = dbHelper.getAllCourses();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, courseList);
-        listViewCourses.setAdapter(adapter);
+        // Fetch courses from Room database on a background thread
+        new Thread(() -> {
+            List<CourseEntity> entities = AppDatabase.getInstance(getApplicationContext()).courseDao().getAllCourses();
+            List<String> displayList = new ArrayList<>();
+            if (entities != null) {
+                for (CourseEntity entity : entities) {
+                    displayList.add(entity.getCourseCode() + " - " + entity.getCourseName());
+                }
+            }
+
+            // Update UI on the main thread
+            runOnUiThread(() -> {
+                courseList = displayList;
+                adapter = new ArrayAdapter<>(AddCourseActivity.this, android.R.layout.simple_list_item_1, courseList);
+                listViewCourses.setAdapter(adapter);
+            });
+        }).start();
     }
 }

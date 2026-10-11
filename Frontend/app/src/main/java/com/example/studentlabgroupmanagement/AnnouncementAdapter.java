@@ -8,13 +8,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntity;
+
 import java.util.List;
 
 public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapter.ViewHolder> {
 
-    private final List<Announcement> list;
+    private final List<AnnouncementEntity> list;
 
-    public AnnouncementAdapter(List<Announcement> list) {
+    public AnnouncementAdapter(List<AnnouncementEntity> list) {
         this.list = list;
     }
 
@@ -28,10 +30,10 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Announcement item = list.get(position);
+        AnnouncementEntity item = list.get(position);
         holder.tvTitle.setText(item.getTitle());
         holder.tvMessage.setText(item.getMessage());
-        holder.tvDate.setText(item.getDatePosted());
+        holder.tvDate.setText(item.getDate());
     }
 
     @Override

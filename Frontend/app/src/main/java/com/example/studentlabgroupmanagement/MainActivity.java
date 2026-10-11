@@ -3,7 +3,6 @@ package com.example.studentlabgroupmanagement;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -23,15 +22,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView tvRegisterLink, tvForgotPassword;
 
-    private DatabaseHelper dbHelper;
     private SessionManager session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        dbHelper = new DatabaseHelper(this);
 
         try {
             session = new SessionManager(this);
@@ -46,35 +42,10 @@ public class MainActivity extends AppCompatActivity {
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
-        // Safety check for views
         if (etUsername == null || etPassword == null || rgRole == null || btnLogin == null) {
             Toast.makeText(this, "Layout Error: Check activity_main.xml IDs", Toast.LENGTH_LONG).show();
             return;
         }
-
-        // --- Room Database Test Verification ---
-        new Thread(() -> {
-            try {
-                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-
-                StudentEntity testStudent = new StudentEntity(
-                        "room_test_user",
-                        "Test Student Name",
-                        "S100",
-                        "test@univ.edu",
-                        "password123",
-                        "Computer Science",
-                        "Group A",
-                        "Student"
-                );
-
-                db.studentDao().insertStudent(testStudent);
-                Log.d("RoomTest", "SUCCESS: Inserted student into Room database.");
-
-            } catch (Exception e) {
-                Log.e("RoomTest", "Error during Room test: " + e.getMessage());
-            }
-        }).start();
 
         // LOGIN BUTTON
         btnLogin.setOnClickListener(v -> {
@@ -95,8 +66,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String selectedRoleText = rbSelected.getText().toString().trim();
-
-            // Normalize role string so it matches Database representation ("Student" or "Lecturer")
             String role = selectedRoleText.equalsIgnoreCase("Student") ? "Student" : "Lecturer";
 
             if (username.isEmpty() || password.isEmpty()) {
@@ -104,46 +73,49 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            boolean isValid = dbHelper.checkUserLogin(username, password, role);
+            new Thread(() -> {
+                StudentEntity student = AppDatabase.getInstance(getApplicationContext())
+                        .studentDao()
+                        .getStudentById(username);
 
-            if (isValid) {
-                try {
-                    if (session != null) {
-                        // Store logged-in student's username and role into SharedPreferences session
-                        session.createLoginSession(username, role);
+                boolean isValid = student != null
+                        && password.equals(student.getPassword())
+                        && role.equalsIgnoreCase(student.getRole());
+
+                runOnUiThread(() -> {
+                    if (isValid) {
+                        try {
+                            if (session != null) {
+                                session.createLoginSession(username, role);
+                            }
+                        } catch (Exception e) {
+                            Log.e("MainActivity", "Session save error: " + e.getMessage());
+                        }
+
+                        Toast.makeText(MainActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
+
+                        if (role.equalsIgnoreCase("Student")) {
+                            Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else if (role.equalsIgnoreCase("Lecturer")) {
+                            Intent intent = new Intent(MainActivity.this, LecturerHomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Invalid credentials!", Toast.LENGTH_SHORT).show();
                     }
-                } catch (Exception e) {
-                    Log.e("MainActivity", "Session save error: " + e.getMessage());
-                }
-
-                Toast.makeText(MainActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
-
-                // STUDENT LOGIN
-                if (role.equalsIgnoreCase("Student")) {
-                    Intent intent = new Intent(MainActivity.this, StudentHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-                // LECTURER LOGIN
-                else if (role.equalsIgnoreCase("Lecturer")) {
-                    Intent intent = new Intent(MainActivity.this, LecturerHomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-
-            } else {
-                Toast.makeText(MainActivity.this, "Invalid credentials!", Toast.LENGTH_SHORT).show();
-            }
+                });
+            }).start();
         });
 
-        // FORGOT PASSWORD
         if (tvForgotPassword != null) {
             tvForgotPassword.setOnClickListener(v ->
                     startActivity(new Intent(MainActivity.this, ForgotPasswordActivity.class))
             );
         }
 
-        // REGISTER LINK
         if (tvRegisterLink != null) {
             tvRegisterLink.setOnClickListener(v -> {
                 int selectedId = rgRole.getCheckedRadioButtonId();

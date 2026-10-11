@@ -14,6 +14,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etUsername;
@@ -22,18 +25,15 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView tvRegister;
 
-    private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Force the login screen to stay in light mode so text never appears blurred
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        dbHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
 
         etUsername = findViewById(R.id.etUsername);
@@ -42,7 +42,6 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvRegister = findViewById(R.id.tvRegister);
 
-        // Set up the Spinner with the custom high-contrast layout for vivid text visibility
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.role_array,
@@ -63,34 +62,39 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            // Check login credentials
-            boolean isValid = dbHelper.checkUserLogin(username, password, role);
+            // Room query on a background thread
+            new Thread(() -> {
+                StudentEntity student = AppDatabase.getInstance(getApplicationContext())
+                        .studentDao()
+                        .getStudentById(username);
 
-            if (isValid) {
-                // Save session using SessionManager
-                sessionManager.createLoginSession(username, role);
+                boolean isValid = student != null
+                        && password.equals(student.getPassword())
+                        && role.equalsIgnoreCase(student.getRole());
 
-                // Save username into SharedPreferences for quick retrieval
-                SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("username", username);
-                editor.apply();
+                runOnUiThread(() -> {
+                    if (isValid) {
+                        sessionManager.createLoginSession(username, role);
 
-                Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                        sharedPref.edit().putString("username", username).apply();
 
-                // Navigate based on role
-                Intent intent;
-                if ("Lecturer".equalsIgnoreCase(role)) {
-                    intent = new Intent(LoginActivity.this, LecturerHomeActivity.class);
-                } else {
-                    intent = new Intent(LoginActivity.this, StudentHomeActivity.class);
-                }
-                intent.putExtra("username", username);
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-            }
+                        Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                        Intent intent;
+                        if ("Lecturer".equalsIgnoreCase(role)) {
+                            intent = new Intent(LoginActivity.this, LecturerHomeActivity.class);
+                        } else {
+                            intent = new Intent(LoginActivity.this, StudentHomeActivity.class);
+                        }
+                        intent.putExtra("username", username);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }).start();
         });
 
         if (tvRegister != null) {

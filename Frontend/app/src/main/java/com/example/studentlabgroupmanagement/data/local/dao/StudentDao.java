@@ -23,4 +23,22 @@ public interface StudentDao {
 
     @Query("SELECT * FROM users")
     LiveData<List<StudentEntity>> getAllStudentsLive();
+
+    @Query("SELECT * FROM users")
+    List<StudentEntity> getAllStudents();
+
+    @Query("SELECT * FROM users WHERE labGroup = :groupName")
+    List<StudentEntity> getStudentsByLabGroup(String groupName);
+
+    @Query("SELECT COUNT(*) FROM users WHERE labGroup = :groupName AND role = 'Student'")
+    int getStudentCountByGroup(String groupName);
+
+    @Query("UPDATE users SET labGroup = :groupName WHERE username = :username")
+    void updateStudentGroup(String username, String groupName);
+
+    @Query("DELETE FROM users WHERE username = :username")
+    void deleteUserByUsername(String username);
+
+    @Query("UPDATE users SET labGroup = :newName WHERE labGroup = :oldName")
+    void updateGroupMembersLabGroup(String oldName, String newName);
 }

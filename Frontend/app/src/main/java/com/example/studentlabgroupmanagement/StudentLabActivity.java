@@ -1,7 +1,6 @@
 package com.example.studentlabgroupmanagement;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,26 +16,29 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class StudentLabActivity extends AppCompatActivity {
 
     private LinearLayout containerLecturerLabs;
     private TextView tvNoLecturerLabs;
-    private DatabaseHelper dbHelper;
     private int selectedLabIdForSubmission = -1;
+    private SessionManager sessionManager;
 
-    // Launcher for selecting a student submission file
     private final ActivityResultLauncher<String> submissionFilePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null && selectedLabIdForSubmission != -1) {
-                    // Ask confirmation before saving and submitting
                     confirmAndSubmitFile(uri);
                 }
             });
@@ -46,18 +48,14 @@ public class StudentLabActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_lab);
 
-        dbHelper = new DatabaseHelper(this);
+        sessionManager = new SessionManager(this);
 
-        // Bind layout components matching activity_student_lab.xml
         containerLecturerLabs = findViewById(R.id.containerLecturerLabs);
         tvNoLecturerLabs = findViewById(R.id.tvNoLecturerLabs);
 
         loadLecturerPublishedLabs();
     }
 
-    /**
-     * Prompts the student with an AlertDialog to confirm submission before saving.
-     */
     private void confirmAndSubmitFile(Uri uri) {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Submission")
@@ -71,105 +69,101 @@ public class StudentLabActivity extends AppCompatActivity {
                 .show();
     }
 
-    /**
-     * Saves the picked file into internal storage and inserts the submission record into SQLite.
-     */
     private void processSubmission(Uri uri) {
         String savedPath = saveSubmissionToInternalStorage(uri);
 
         if (savedPath != null) {
             String submittedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
-
-            // Retrieve logged-in student number
-            String studentNumber = "STUDENT123";
-
-            boolean success = dbHelper.saveSubmission(
-                    selectedLabIdForSubmission,
-                    studentNumber,
-                    savedPath, // Store local path in SQLite
-                    submittedAt
-            );
-
-            if (success) {
-                Toast.makeText(this, "Lab Work Submitted Successfully!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Submission Failed", Toast.LENGTH_SHORT).show();
+            String studentNumber = sessionManager.getUsername();
+            if (studentNumber == null || studentNumber.isEmpty()) {
+                studentNumber = "STUDENT123";
             }
+
+            final String finalStudentNum = studentNumber;
+            final String finalPath = savedPath;
+
+            new Thread(() -> {
+                SubmissionEntity submission = new SubmissionEntity();
+                submission.setLabId(selectedLabIdForSubmission);
+                submission.setStudentNumber(finalStudentNum);
+                submission.setFilePath(finalPath);
+                submission.setSubmittedAt(submittedAt);
+                submission.setStatus("PENDING");
+
+                AppDatabase.getInstance(getApplicationContext()).submissionDao().insertSubmission(submission);
+
+                runOnUiThread(() -> Toast.makeText(this, "Lab Work Submitted Successfully!", Toast.LENGTH_SHORT).show());
+            }).start();
         } else {
             Toast.makeText(this, "Failed to process selected file", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void loadLecturerPublishedLabs() {
-        containerLecturerLabs.removeAllViews();
-        Cursor cursor = dbHelper.getPublishedLabs();
+        new Thread(() -> {
+            List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext())
+                    .labDao()
+                    .getAllLabs();
 
-        if (cursor == null || cursor.getCount() == 0) {
-            tvNoLecturerLabs.setVisibility(View.VISIBLE);
-            if (cursor != null) cursor.close();
-            return;
-        }
+            runOnUiThread(() -> {
+                containerLecturerLabs.removeAllViews();
+                if (labs == null || labs.isEmpty()) {
+                    if (tvNoLecturerLabs != null) tvNoLecturerLabs.setVisibility(View.VISIBLE);
+                    return;
+                }
 
-        tvNoLecturerLabs.setVisibility(View.GONE);
-        LayoutInflater inflater = LayoutInflater.from(this);
+                if (tvNoLecturerLabs != null) tvNoLecturerLabs.setVisibility(View.GONE);
+                LayoutInflater inflater = LayoutInflater.from(this);
 
-        while (cursor.moveToNext()) {
-            int labId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-            String title = cursor.getString(cursor.getColumnIndexOrThrow("lab_title"));
-            String description = cursor.getString(cursor.getColumnIndexOrThrow("lab_description"));
-            String dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"));
+                for (LabEntity lab : labs) {
+                    if (!"PUBLISHED".equals(lab.getStatus())) {
+                        continue;
+                    }
 
-            String filePath = "";
-            int filePathIndex = cursor.getColumnIndex("file_path");
-            if (filePathIndex != -1) {
-                filePath = cursor.getString(filePathIndex);
-            }
+                    int labId = lab.getId();
+                    String title = lab.getTitle();
+                    String description = lab.getDescription();
+                    String dueDate = lab.getDueDate();
+                    String filePath = lab.getFilePath();
 
-            // Inflate individual card item
-            View card = inflater.inflate(R.layout.item_student_lab_card, containerLecturerLabs, false);
+                    View card = inflater.inflate(R.layout.item_student_lab_card, containerLecturerLabs, false);
 
-            TextView txtTitle = card.findViewById(R.id.txtStudentLabTitle);
-            TextView txtDesc = card.findViewById(R.id.txtStudentLabDescription);
-            TextView txtDueDate = card.findViewById(R.id.txtStudentLabDueDate);
-            Button btnViewAttachment = card.findViewById(R.id.btnViewAttachment);
-            Button btnSubmitWork = card.findViewById(R.id.btnSubmitWork);
+                    TextView txtTitle = card.findViewById(R.id.txtStudentLabTitle);
+                    TextView txtDesc = card.findViewById(R.id.txtStudentLabDescription);
+                    TextView txtDueDate = card.findViewById(R.id.txtStudentLabDueDate);
+                    Button btnViewAttachment = card.findViewById(R.id.btnViewAttachment);
+                    Button btnSubmitWork = card.findViewById(R.id.btnSubmitWork);
 
-            txtTitle.setText(title);
-            txtDesc.setText(description);
-            txtDueDate.setText("Due Date: " + dueDate);
+                    if (txtTitle != null) txtTitle.setText(title);
+                    if (txtDesc != null) txtDesc.setText(description);
+                    if (txtDueDate != null) txtDueDate.setText("Due Date: " + dueDate);
 
-            final String finalFilePath = filePath;
+                    if (btnViewAttachment != null) {
+                        btnViewAttachment.setOnClickListener(v -> {
+                            if (filePath != null && !filePath.trim().isEmpty()) {
+                                openOrDownloadFile(filePath);
+                            } else {
+                                Toast.makeText(StudentLabActivity.this, "No file attached by lecturer", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
 
-            // Open/View Lecturer Attachment
-            btnViewAttachment.setOnClickListener(v -> {
-                if (finalFilePath != null && !finalFilePath.trim().isEmpty()) {
-                    openOrDownloadFile(finalFilePath);
-                } else {
-                    Toast.makeText(StudentLabActivity.this, "No file attached by lecturer", Toast.LENGTH_SHORT).show();
+                    if (btnSubmitWork != null) {
+                        btnSubmitWork.setOnClickListener(v -> {
+                            selectedLabIdForSubmission = labId;
+                            submissionFilePicker.launch("*/*");
+                        });
+                    }
+
+                    containerLecturerLabs.addView(card);
                 }
             });
-
-            // Submit Student Work
-            btnSubmitWork.setOnClickListener(v -> {
-                selectedLabIdForSubmission = labId;
-                submissionFilePicker.launch("*/*");
-            });
-
-            containerLecturerLabs.addView(card);
-        }
-
-        cursor.close();
+        }).start();
     }
 
-    /**
-     * Copies student submission into internal application storage
-     * so it persists and can be accessed across activities by the lecturer.
-     */
     private String saveSubmissionToInternalStorage(Uri sourceUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(sourceUri);
-
-            // Determine file extension
             String extension = ".pdf";
             String mimeType = getContentResolver().getType(sourceUri);
             if (mimeType != null && mimeType.contains("word")) {
@@ -203,7 +197,6 @@ public class StudentLabActivity extends AppCompatActivity {
             File file = new File(filePathOrUri);
             Uri fileUri;
 
-            // Use FileProvider for local files saved in app storage
             if (file.exists()) {
                 fileUri = FileProvider.getUriForFile(
                         this,

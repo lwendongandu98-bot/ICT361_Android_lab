@@ -1,7 +1,6 @@
 package com.example.studentlabgroupmanagement;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,10 +15,14 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
+import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 public class LabsActivity extends AppCompatActivity {
 
@@ -33,18 +36,13 @@ public class LabsActivity extends AppCompatActivity {
 
     private LinearLayout labsContainer;
 
-    private DatabaseHelper dbHelper;
-
     private String selectedFilePath = "";
     private int editingLabId = -1;
 
-    // File picker launcher setup
     private final ActivityResultLauncher<String> filePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
-                    // Copy file to internal app storage and retrieve local path
                     String savedPath = saveFileToInternalStorage(uri);
-
                     if (savedPath != null) {
                         selectedFilePath = savedPath;
                         String fileName = getFileNameFromUri(uri);
@@ -61,8 +59,6 @@ public class LabsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_labs);
 
-        dbHelper = new DatabaseHelper(this);
-
         etLabTitle = findViewById(R.id.etLabTitle);
         etLabDescription = findViewById(R.id.etLabDescription);
         etDueDate = findViewById(R.id.etDueDate);
@@ -73,7 +69,6 @@ public class LabsActivity extends AppCompatActivity {
 
         labsContainer = findViewById(R.id.labsContainer);
 
-        // Open system document picker for PDF, DOCX, ZIP, or all file types (*/*)
         btnChooseFile.setOnClickListener(v -> filePickerLauncher.launch("*/*"));
 
         btnSaveDraft.setOnClickListener(v -> saveOrUpdateLab("DRAFT"));
@@ -87,152 +82,130 @@ public class LabsActivity extends AppCompatActivity {
         String description = etLabDescription.getText().toString().trim();
         String dueDate = etDueDate.getText().toString().trim();
 
-        if (title.isEmpty()) {
-            Toast.makeText(this, "Please enter a lab title", Toast.LENGTH_SHORT).show();
+        if (title.isEmpty() || description.isEmpty() || dueDate.isEmpty()) {
+            Toast.makeText(this, "Please enter all lab fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (description.isEmpty()) {
-            Toast.makeText(this, "Please enter a lab description", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (dueDate.isEmpty()) {
-            Toast.makeText(this, "Please enter a due date", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (editingLabId != -1) {
-            boolean success = dbHelper.updateLab(editingLabId, title, description, dueDate, selectedFilePath);
-            if (success) {
-                if ("PUBLISHED".equals(status)) {
-                    dbHelper.publishLab(editingLabId);
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            if (editingLabId != -1) {
+                LabEntity lab = db.labDao().getLabById(editingLabId);
+                if (lab != null) {
+                    lab.setTitle(title);
+                    lab.setDescription(description);
+                    lab.setDueDate(dueDate);
+                    lab.setFilePath(selectedFilePath);
+                    if ("PUBLISHED".equals(status)) {
+                        lab.setStatus("PUBLISHED");
+                    }
+                    db.labDao().updateLab(lab);
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Lab Updated Successfully", Toast.LENGTH_SHORT).show();
+                        clearFields();
+                        loadLabs();
+                    });
                 }
-                Toast.makeText(this, "Lab Updated Successfully", Toast.LENGTH_SHORT).show();
-                clearFields();
-                loadLabs();
             } else {
-                Toast.makeText(this, "Failed To Update Lab", Toast.LENGTH_SHORT).show();
+                LabEntity newLab = new LabEntity(title, description, dueDate, selectedFilePath, status);
+                db.labDao().insertLab(newLab);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, status.equals("DRAFT") ? "Lab Saved As Draft" : "Lab Published Successfully", Toast.LENGTH_SHORT).show();
+                    clearFields();
+                    loadLabs();
+                });
             }
-        } else {
-            boolean success = dbHelper.saveLab(title, description, dueDate, selectedFilePath, status);
-            if (success) {
-                Toast.makeText(
-                        this,
-                        status.equals("DRAFT") ? "Lab Saved As Draft" : "Lab Published Successfully",
-                        Toast.LENGTH_SHORT
-                ).show();
-                clearFields();
-                loadLabs();
-            } else {
-                Toast.makeText(this, "Failed To Save Lab", Toast.LENGTH_SHORT).show();
-            }
-        }
+        }).start();
     }
 
     private void loadLabs() {
-        labsContainer.removeAllViews();
+        new Thread(() -> {
+            List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext()).labDao().getAllLabs();
 
-        Cursor cursor = dbHelper.getAllLabs();
-        if (cursor == null) {
-            return;
-        }
+            runOnUiThread(() -> {
+                labsContainer.removeAllViews();
+                if (labs == null) return;
 
-        LayoutInflater inflater = LayoutInflater.from(this);
+                LayoutInflater inflater = LayoutInflater.from(this);
 
-        while (cursor.moveToNext()) {
-            int labId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-            String title = cursor.getString(cursor.getColumnIndexOrThrow("lab_title"));
-            String description = cursor.getString(cursor.getColumnIndexOrThrow("lab_description"));
-            String dueDate = cursor.getString(cursor.getColumnIndexOrThrow("due_date"));
-            String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
+                for (LabEntity lab : labs) {
+                    int labId = lab.getId();
+                    String title = lab.getTitle();
+                    String description = lab.getDescription();
+                    String dueDate = lab.getDueDate();
+                    String status = lab.getStatus();
+                    String filePath = lab.getFilePath();
 
-            String filePath = "";
-            int filePathIndex = cursor.getColumnIndex("file_path");
-            if (filePathIndex != -1) {
-                filePath = cursor.getString(filePathIndex);
-            }
+                    View card = inflater.inflate(R.layout.item_lab_card, labsContainer, false);
 
-            View card = inflater.inflate(R.layout.item_lab_card, labsContainer, false);
+                    TextView txtLabTitle = card.findViewById(R.id.txtLabTitle);
+                    TextView txtLabDescription = card.findViewById(R.id.txtLabDescription);
+                    TextView txtLabDueDate = card.findViewById(R.id.txtLabDueDate);
+                    TextView txtLabStatus = card.findViewById(R.id.txtLabStatus);
 
-            TextView txtLabTitle = card.findViewById(R.id.txtLabTitle);
-            TextView txtLabDescription = card.findViewById(R.id.txtLabDescription);
-            TextView txtLabDueDate = card.findViewById(R.id.txtLabDueDate);
-            TextView txtLabStatus = card.findViewById(R.id.txtLabStatus);
+                    Button btnEdit = card.findViewById(R.id.btnEdit);
+                    Button btnPublish = card.findViewById(R.id.btnPublish);
+                    Button btnDelete = card.findViewById(R.id.btnDeleteLab);
 
-            Button btnEdit = card.findViewById(R.id.btnEdit);
-            Button btnPublish = card.findViewById(R.id.btnPublish);
-            Button btnDelete = card.findViewById(R.id.btnDeleteLab);
+                    txtLabTitle.setText(title);
+                    txtLabDescription.setText(description);
+                    txtLabDueDate.setText("Due Date: " + dueDate);
+                    txtLabStatus.setText("Status: " + status);
 
-            txtLabTitle.setText(title);
-            txtLabDescription.setText(description);
-            txtLabDueDate.setText("Due Date: " + dueDate);
-            txtLabStatus.setText("Status: " + status);
+                    if (btnEdit != null) {
+                        btnEdit.setOnClickListener(v -> {
+                            editingLabId = labId;
+                            etLabTitle.setText(title);
+                            etLabDescription.setText(description);
+                            etDueDate.setText(dueDate);
+                            selectedFilePath = filePath != null ? filePath : "";
 
-            if (btnEdit != null) {
-                final String finalFilePath = filePath;
-                btnEdit.setOnClickListener(v -> {
-                    editingLabId = labId;
-                    etLabTitle.setText(title);
-                    etLabDescription.setText(description);
-                    etDueDate.setText(dueDate);
-                    selectedFilePath = finalFilePath != null ? finalFilePath : "";
+                            btnChooseFile.setText(!selectedFilePath.isEmpty() ? "File Attached" : "Choose Lab File");
+                            btnSaveDraft.setText("Update Draft");
+                            btnPublishLab.setText("Update & Publish");
+                            Toast.makeText(LabsActivity.this, "Editing: " + title, Toast.LENGTH_SHORT).show();
+                        });
+                    }
 
-                    if (!selectedFilePath.isEmpty()) {
-                        btnChooseFile.setText("File Attached");
+                    if ("PUBLISHED".equals(status)) {
+                        if (btnPublish != null) btnPublish.setVisibility(View.GONE);
                     } else {
-                        btnChooseFile.setText("Choose Lab File");
+                        if (btnPublish != null) {
+                            btnPublish.setVisibility(View.VISIBLE);
+                            btnPublish.setOnClickListener(v -> {
+                                new Thread(() -> {
+                                    AppDatabase.getInstance(getApplicationContext()).labDao().updateLabStatus(labId, "PUBLISHED");
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(LabsActivity.this, "Lab Published", Toast.LENGTH_SHORT).show();
+                                        loadLabs();
+                                    });
+                                }).start();
+                            });
+                        }
                     }
 
-                    btnSaveDraft.setText("Update Draft");
-                    btnPublishLab.setText("Update & Publish");
-                    Toast.makeText(LabsActivity.this, "Editing: " + title, Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            if ("PUBLISHED".equals(status)) {
-                if (btnPublish != null) {
-                    btnPublish.setVisibility(View.GONE);
-                }
-            } else {
-                if (btnPublish != null) {
-                    btnPublish.setVisibility(View.VISIBLE);
-                    btnPublish.setOnClickListener(v -> {
-                        if (dbHelper.publishLab(labId)) {
-                            Toast.makeText(LabsActivity.this, "Lab Published", Toast.LENGTH_SHORT).show();
-                            loadLabs();
-                        }
-                    });
-                }
-            }
-
-            if (btnDelete != null) {
-                btnDelete.setOnClickListener(v -> {
-                    if (dbHelper.deleteLab(labId)) {
-                        Toast.makeText(LabsActivity.this, "Lab Deleted", Toast.LENGTH_SHORT).show();
-                        if (editingLabId == labId) {
-                            clearFields();
-                        }
-                        loadLabs();
+                    if (btnDelete != null) {
+                        btnDelete.setOnClickListener(v -> {
+                            new Thread(() -> {
+                                AppDatabase.getInstance(getApplicationContext()).labDao().deleteLabById(labId);
+                                runOnUiThread(() -> {
+                                    Toast.makeText(LabsActivity.this, "Lab Deleted", Toast.LENGTH_SHORT).show();
+                                    if (editingLabId == labId) clearFields();
+                                    loadLabs();
+                                });
+                            }).start();
+                        });
                     }
-                });
-            }
 
-            labsContainer.addView(card);
-        }
-
-        cursor.close();
+                    labsContainer.addView(card);
+                }
+            });
+        }).start();
     }
 
-    /**
-     * Copies the picked URI file into internal application storage
-     * so it remains permanently accessible across activities via FileProvider.
-     */
     private String saveFileToInternalStorage(Uri sourceUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(sourceUri);
-
-            // Extract original extension or fallback to pdf
             String extension = ".pdf";
             String mimeType = getContentResolver().getType(sourceUri);
             if (mimeType != null && mimeType.contains("word")) {

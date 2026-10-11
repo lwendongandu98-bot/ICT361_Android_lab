@@ -15,6 +15,12 @@ public interface SubmissionDao {
     @Query("SELECT * FROM submissions WHERE status = 'PENDING'")
     List<SubmissionEntity> getPendingSubmissions();
 
+    @Query("SELECT * FROM submissions WHERE status = 'CHECKED'")
+    List<SubmissionEntity> getCheckedSubmissions();
+
     @Query("UPDATE submissions SET status = 'CHECKED' WHERE id = :submissionId")
     void markAsChecked(int submissionId);
+
+    @Query("UPDATE submissions SET status = 'CHECKED' WHERE id = :submissionId")
+    void markSubmissionAsChecked(int submissionId);
 }
