@@ -34,7 +34,8 @@ public class StudentAnnouncementsActivity extends AppCompatActivity {
         rvAnnouncements.setLayoutManager(new LinearLayoutManager(this));
 
         new Thread(() -> {
-            List<AnnouncementEntity> list = AppDatabase.getInstance(getApplicationContext()).announcementDao().getAllAnnouncements();
+            // FIXED: Using getAllAnnouncementsSync() to fetch synchronously on the background thread
+            List<AnnouncementEntity> list = AppDatabase.getInstance(getApplicationContext()).announcementDao().getAllAnnouncementsSync();
             runOnUiThread(() -> rvAnnouncements.setAdapter(new AnnouncementAdapter(list)));
         }).start();
     }

@@ -43,6 +43,10 @@ public class StudentsActivity extends AppCompatActivity {
 
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
 
+        // --- CHECK SERVER CONNECTION ON STARTUP ---
+        NetworkCheckHelper.checkConnection(this);
+        // ------------------------------------------
+
         loadStudents();
 
         searchViewStudents.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

@@ -3,6 +3,7 @@ package com.example.studentlabgroupmanagement.data.local.entity;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "lab_groups")
 public class LabGroupEntity {
@@ -10,16 +11,18 @@ public class LabGroupEntity {
     private int id;
 
     @ColumnInfo(name = "group_name")
+    @SerializedName("group_name") // Matches Node.js req.body.group_name
     private String groupName;
 
-    private String description;
+    @SerializedName("max_occupancy") // Matches Node.js req.body.max_occupancy
+    private int maxOccupancy;
 
     // Default constructor required by Room
     public LabGroupEntity() {}
 
-    public LabGroupEntity(String groupName, String description) {
+    public LabGroupEntity(String groupName, int maxOccupancy) {
         this.groupName = groupName;
-        this.description = description;
+        this.maxOccupancy = maxOccupancy;
     }
 
     public int getId() { return id; }
@@ -28,6 +31,6 @@ public class LabGroupEntity {
     public String getGroupName() { return groupName; }
     public void setGroupName(String groupName) { this.groupName = groupName; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public int getMaxOccupancy() { return maxOccupancy; }
+    public void setMaxOccupancy(int maxOccupancy) { this.maxOccupancy = maxOccupancy; }
 }

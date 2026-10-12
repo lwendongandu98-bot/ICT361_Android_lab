@@ -1,5 +1,6 @@
 package com.example.studentlabgroupmanagement.data.local.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -16,8 +17,13 @@ public interface LabDao {
     @Update
     void updateLab(LabEntity lab);
 
+    // Reactive LiveData query for UI ViewModels
     @Query("SELECT * FROM labs")
-    List<LabEntity> getAllLabs();
+    LiveData<List<LabEntity>> getAllLabs();
+
+    // Synchronous query for background threads / activities
+    @Query("SELECT * FROM labs")
+    List<LabEntity> getAllLabsSync();
 
     @Query("SELECT * FROM labs WHERE id = :id")
     LabEntity getLabById(int id);

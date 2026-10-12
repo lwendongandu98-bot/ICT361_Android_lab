@@ -1,5 +1,6 @@
 package com.example.studentlabgroupmanagement.data.local.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -11,6 +12,14 @@ import java.util.List;
 public interface SubmissionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertSubmission(SubmissionEntity submission);
+
+    // Reactive LiveData query for UI ViewModels
+    @Query("SELECT * FROM submissions")
+    LiveData<List<SubmissionEntity>> getAllSubmissions();
+
+    // Synchronous query for background workers
+    @Query("SELECT * FROM submissions")
+    List<SubmissionEntity> getAllSubmissionsSync();
 
     @Query("SELECT * FROM submissions WHERE status = 'PENDING'")
     List<SubmissionEntity> getPendingSubmissions();

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 
 public class LecturerRegisterActivity extends AppCompatActivity {
 
@@ -95,10 +96,14 @@ public class LecturerRegisterActivity extends AppCompatActivity {
                     );
                     db.studentDao().insertStudent(newLecturer);
 
+                    // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
+                    SyncHelper.triggerSync(this);
+                    // --------------------------------------------------
+
                     runOnUiThread(() -> {
                         Toast.makeText(
                                 LecturerRegisterActivity.this,
-                                "Lecturer Registered Successfully",
+                                "Registration saved locally! Will sync when online.",
                                 Toast.LENGTH_SHORT
                         ).show();
 

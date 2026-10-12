@@ -13,9 +13,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +44,10 @@ public class SubmissionsActivity extends AppCompatActivity {
         containerSubmissions = findViewById(R.id.containerSubmissions);
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions);
         btnOpenCheckedLabs = findViewById(R.id.btnOpenCheckedLabs);
+
+        // --- CHECK SERVER CONNECTION ON STARTUP ---
+        NetworkCheckHelper.checkConnection(this);
+        // ------------------------------------------
 
         if (btnOpenCheckedLabs != null) {
             btnOpenCheckedLabs.setOnClickListener(v -> {
@@ -115,8 +125,24 @@ public class SubmissionsActivity extends AppCompatActivity {
                                         .submissionDao()
                                         .markSubmissionAsChecked(submissionId);
 
+                                // --- TRIGGER WORKMANAGER BACKGROUND SYNC ---
+                                Constraints constraints = new Constraints.Builder()
+                                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                                        .build();
+
+                                OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(DataSyncWorker.class)
+                                        .setConstraints(constraints)
+                                        .build();
+
+                                WorkManager.getInstance(getApplicationContext()).enqueueUniqueWork(
+                                        "FullAppSyncWork",
+                                        ExistingWorkPolicy.KEEP,
+                                        syncRequest
+                                );
+                                // ------------------------------------------
+
                                 runOnUiThread(() -> {
-                                    Toast.makeText(SubmissionsActivity.this, "Submission marked as checked", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(SubmissionsActivity.this, "Submission marked as checked locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                                     loadSubmissions();
                                 });
                             }).start();

@@ -1,33 +1,60 @@
 package com.example.studentlabgroupmanagement.data.repository;
 
-import android.content.Context;
+import android.app.Application;
+import androidx.lifecycle.LiveData;
+import com.example.studentlabgroupmanagement.data.local.dao.StudentDao;
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
-import com.example.studentlabgroupmanagement.data.local.entity.OperationEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
-import java.util.UUID;
+import com.example.studentlabgroupmanagement.data.remote.ApiService;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class StudentRepository {
-    private final AppDatabase db;
+    private StudentDao studentDao;
+    private ApiService apiService;
+    private LiveData<List<StudentEntity>> allStudents;
+    private ExecutorService executorService;
 
-    public StudentRepository(Context context) {
-        db = AppDatabase.getInstance(context);
+    public StudentRepository(Application application) {
+        AppDatabase database = AppDatabase.getInstance(application);
+        studentDao = database.studentDao();
+        allStudents = studentDao.getAllStudentsLive();
+        apiService = RetrofitClient.getApiService();
+        executorService = Executors.newFixedThreadPool(2);
     }
 
-    // Save proposed edit and operation atomically in a Room transaction
-    public void saveOfflineEdit(String username, String accountId, String type, String payload, int baseVersion) {
-        db.runInTransaction(() -> {
-            StudentEntity student = db.studentDao().getStudentById(username);
-            if (student != null) {
-                // Since syncStatus was moved or if you want to handle updates:
-                // student.setSyncStatus("Pending");
-                db.studentDao().updateStudent(student);
+    public LiveData<List<StudentEntity>> getAllStudents() {
+        return allStudents;
+    }
+
+    public void insertStudent(StudentEntity student, GroupRepository.OnOperationCallback callback) {
+        apiService.createStudent(student).enqueue(new Callback<StudentEntity>() {
+            @Override
+            public void onResponse(Call<StudentEntity> call, Response<StudentEntity> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    executorService.execute(() -> studentDao.insertStudent(student));
+                    callback.onSuccess("Student synced with MySQL successfully!");
+                } else {
+                    saveLocallyAndFallback(student, callback);
+                }
             }
 
-            String operationId = UUID.randomUUID().toString();
-            OperationEntity operation = new OperationEntity(
-                    operationId, username, accountId, type, payload, baseVersion, System.currentTimeMillis()
-            );
-            db.operationDao().insertOperation(operation);
+            @Override
+            public void onFailure(Call<StudentEntity> call, Throwable t) {
+                saveLocallyAndFallback(student, callback);
+            }
+        });
+    }
+
+    private void saveLocallyAndFallback(StudentEntity student, GroupRepository.OnOperationCallback callback) {
+        executorService.execute(() -> {
+            studentDao.insertStudent(student);
+            callback.onSuccess("Offline mode: Student saved locally & sync scheduled!");
         });
     }
 }

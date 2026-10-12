@@ -19,6 +19,7 @@ import androidx.core.content.FileProvider;
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +53,10 @@ public class StudentLabActivity extends AppCompatActivity {
 
         containerLecturerLabs = findViewById(R.id.containerLecturerLabs);
         tvNoLecturerLabs = findViewById(R.id.tvNoLecturerLabs);
+
+        // --- CHECK SERVER CONNECTION ON STARTUP ---
+        NetworkCheckHelper.checkConnection(this);
+        // ------------------------------------------
 
         loadLecturerPublishedLabs();
     }
@@ -92,7 +97,11 @@ public class StudentLabActivity extends AppCompatActivity {
 
                 AppDatabase.getInstance(getApplicationContext()).submissionDao().insertSubmission(submission);
 
-                runOnUiThread(() -> Toast.makeText(this, "Lab Work Submitted Successfully!", Toast.LENGTH_SHORT).show());
+                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
+                SyncHelper.triggerSync(this);
+                // --------------------------------------------------
+
+                runOnUiThread(() -> Toast.makeText(this, "Lab work saved locally! Will sync when online.", Toast.LENGTH_SHORT).show());
             }).start();
         } else {
             Toast.makeText(this, "Failed to process selected file", Toast.LENGTH_SHORT).show();
@@ -101,9 +110,10 @@ public class StudentLabActivity extends AppCompatActivity {
 
     private void loadLecturerPublishedLabs() {
         new Thread(() -> {
+            // FIXED: Using getAllLabsSync() to fetch the list synchronously on this background thread
             List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext())
                     .labDao()
-                    .getAllLabs();
+                    .getAllLabsSync();
 
             runOnUiThread(() -> {
                 containerLecturerLabs.removeAllViews();

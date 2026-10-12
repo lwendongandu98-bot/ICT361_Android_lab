@@ -14,26 +14,27 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.studentlabgroupmanagement.data.local.AppDatabase;
-import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity; // Or LecturerEntity depending on your schema
+import com.example.studentlabgroupmanagement.data.repository.GroupRepository;
+import com.example.studentlabgroupmanagement.ui.viewmodel.LecturerProfileViewModel;
 import com.google.android.material.imageview.ShapeableImageView;
 
 public class LecturerProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView imgProfile;
     private ImageButton btnUploadImage;
-    private EditText etName;
-    private EditText etEmail;
-    private EditText etDepartment;
-    private EditText etPhone;
-
-    private Button btnUpdateProfile;
-    private Button btnBack;
+    private EditText etName, etEmail, etDepartment, etPhone;
+    private Button btnUpdateProfile, btnBack;
 
     private SessionManager sessionManager;
+    private LecturerProfileViewModel profileViewModel;
     private String username;
     private Uri selectedImageUri;
+
+    // Track loaded entity object to update it
+    private StudentEntity currentLecturer;
 
     private final ActivityResultLauncher<String> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
@@ -58,6 +59,9 @@ public class LecturerProfileActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
+        // Initialize ViewModel
+        profileViewModel = new ViewModelProvider(this).get(LecturerProfileViewModel.class);
+
         Toolbar toolbar = findViewById(R.id.toolbarProfile);
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -73,7 +77,6 @@ public class LecturerProfileActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etDepartment = findViewById(R.id.etDepartment);
         etPhone = findViewById(R.id.etPhone);
-
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
         btnBack = findViewById(R.id.btnBack);
 
@@ -82,6 +85,7 @@ public class LecturerProfileActivity extends AppCompatActivity {
             username = sessionManager.getUsername();
         }
 
+        // Load data reactively via ViewModel LiveData observer
         loadLecturerData();
 
         if (btnUploadImage != null) {
@@ -99,33 +103,38 @@ public class LecturerProfileActivity extends AppCompatActivity {
                 return;
             }
 
-            if (username != null && !username.isEmpty()) {
-                new Thread(() -> {
-                    AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                    StudentEntity lecturer = db.studentDao().getStudentById(username);
+            if (currentLecturer != null) {
+                // Update entity fields
+                currentLecturer.setName(name);
+                currentLecturer.setEmail(email);
+                currentLecturer.setProgram(department);
+                currentLecturer.setStudentNum(phone);
 
-                    if (lecturer != null) {
-                        lecturer.setName(name);
-                        lecturer.setEmail(email);
-                        lecturer.setProgram(department);
-                        lecturer.setStudentNum(phone);
-                        db.studentDao().updateStudent(lecturer);
+                // Save profile image URI locally in SharedPreferences if changed
+                if (selectedImageUri != null) {
+                    SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
+                    prefs.edit().putString("profile_image_" + username, selectedImageUri.toString()).apply();
+                }
 
-                        if (selectedImageUri != null) {
-                            SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
-                            prefs.edit().putString("profile_image_" + username, selectedImageUri.toString()).apply();
-                        }
-
+                // Send update through ViewModel / Repository (Syncs with MySQL backend or falls back locally)
+                profileViewModel.updateLecturerProfile(currentLecturer, new GroupRepository.OnOperationCallback() {
+                    @Override
+                    public void onSuccess(String message) {
                         runOnUiThread(() -> {
-                            Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LecturerProfileActivity.this, message, Toast.LENGTH_LONG).show();
                             finish();
                         });
-                    } else {
-                        runOnUiThread(() -> Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show());
                     }
-                }).start();
+
+                    @Override
+                    public void onError(String error) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(LecturerProfileActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
+                        });
+                    }
+                });
             } else {
-                Toast.makeText(this, "No active user session found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No active user profile found to update", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -134,31 +143,29 @@ public class LecturerProfileActivity extends AppCompatActivity {
 
     private void loadLecturerData() {
         if (username != null && !username.isEmpty()) {
-            new Thread(() -> {
-                StudentEntity lecturer = AppDatabase.getInstance(getApplicationContext())
-                        .studentDao()
-                        .getStudentById(username);
+            // Observe the profile data reactively from Room/Repository
+            // (Note: Adjust parameter type in ViewModel if using a dedicated LecturerEntity instead of StudentEntity)
+            profileViewModel.getLecturerProfile(username).observe(this, lecturer -> {
+                if (lecturer != null) {
+                    currentLecturer = lecturer;
+                    if (lecturer.getName() != null) etName.setText(lecturer.getName());
+                    if (lecturer.getEmail() != null) etEmail.setText(lecturer.getEmail());
+                    if (lecturer.getProgram() != null) etDepartment.setText(lecturer.getProgram());
+                    if (lecturer.getStudentNum() != null) etPhone.setText(lecturer.getStudentNum());
+                }
+            });
 
-                runOnUiThread(() -> {
-                    if (lecturer != null) {
-                        if (lecturer.getName() != null) etName.setText(lecturer.getName());
-                        if (lecturer.getEmail() != null) etEmail.setText(lecturer.getEmail());
-                        if (lecturer.getProgram() != null) etDepartment.setText(lecturer.getProgram());
-                        if (lecturer.getStudentNum() != null) etPhone.setText(lecturer.getStudentNum());
-                    }
-
-                    SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
-                    String savedUriStr = prefs.getString("profile_image_" + username, null);
-                    if (savedUriStr != null) {
-                        selectedImageUri = Uri.parse(savedUriStr);
-                        try {
-                            imgProfile.setImageURI(selectedImageUri);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }).start();
+            // Load saved profile image preference
+            SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
+            String savedUriStr = prefs.getString("profile_image_" + username, null);
+            if (savedUriStr != null) {
+                selectedImageUri = Uri.parse(savedUriStr);
+                try {
+                    imgProfile.setImageURI(selectedImageUri);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

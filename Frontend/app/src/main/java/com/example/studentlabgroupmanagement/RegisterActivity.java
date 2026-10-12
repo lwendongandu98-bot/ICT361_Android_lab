@@ -12,11 +12,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +82,22 @@ public class RegisterActivity extends AppCompatActivity {
                     StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, program, labGroup, role);
                     db.studentDao().insertStudent(newStudent);
 
+                    // --- TRIGGER WORKMANAGER BACKGROUND SYNC ---
+                    Constraints constraints = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+
+                    OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(DataSyncWorker.class)
+                            .setConstraints(constraints)
+                            .build();
+
+                    WorkManager.getInstance(getApplicationContext()).enqueueUniqueWork(
+                            "FullAppSyncWork",
+                            ExistingWorkPolicy.KEEP,
+                            syncRequest
+                    );
+                    // ------------------------------------------
+
                     runOnUiThread(() -> {
                         SessionManager sessionManager = new SessionManager(RegisterActivity.this);
                         sessionManager.createLoginSession(username, role);
@@ -83,7 +105,7 @@ public class RegisterActivity extends AppCompatActivity {
                         SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
                         sharedPref.edit().putString("username", username).apply();
 
-                        Toast.makeText(RegisterActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Registration saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(RegisterActivity.this, StudentHomeActivity.class);
                         intent.putExtra("username", username);
@@ -102,8 +124,9 @@ public class RegisterActivity extends AppCompatActivity {
     private void loadSpinnersData() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            List<CourseEntity> courses = db.courseDao().getAllCourses();
-            List<LabGroupEntity> groups = db.labGroupDao().getAllGroups();
+            // FIXED: Using synchronous query methods for background worker threads
+            List<CourseEntity> courses = db.courseDao().getAllCoursesSync();
+            List<LabGroupEntity> groups = db.labGroupDao().getAllGroupsSync();
 
             List<String> courseList = new ArrayList<>();
             if (courses != null) {

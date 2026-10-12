@@ -14,9 +14,15 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
+import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,12 +75,32 @@ public class LabsActivity extends AppCompatActivity {
 
         labsContainer = findViewById(R.id.labsContainer);
 
+        // --- CHECK SERVER CONNECTION ON STARTUP ---
+        NetworkCheckHelper.checkConnection(this);
+        // ------------------------------------------
+
         btnChooseFile.setOnClickListener(v -> filePickerLauncher.launch("*/*"));
 
         btnSaveDraft.setOnClickListener(v -> saveOrUpdateLab("DRAFT"));
         btnPublishLab.setOnClickListener(v -> saveOrUpdateLab("PUBLISHED"));
 
         loadLabs();
+    }
+
+    private void triggerSyncWorker() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(DataSyncWorker.class)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueueUniqueWork(
+                "FullAppSyncWork",
+                ExistingWorkPolicy.KEEP,
+                syncRequest
+        );
     }
 
     private void saveOrUpdateLab(String status) {
@@ -100,8 +126,11 @@ public class LabsActivity extends AppCompatActivity {
                         lab.setStatus("PUBLISHED");
                     }
                     db.labDao().updateLab(lab);
+
+                    triggerSyncWorker();
+
                     runOnUiThread(() -> {
-                        Toast.makeText(this, "Lab Updated Successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Lab saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                         clearFields();
                         loadLabs();
                     });
@@ -109,8 +138,11 @@ public class LabsActivity extends AppCompatActivity {
             } else {
                 LabEntity newLab = new LabEntity(title, description, dueDate, selectedFilePath, status);
                 db.labDao().insertLab(newLab);
+
+                triggerSyncWorker();
+
                 runOnUiThread(() -> {
-                    Toast.makeText(this, status.equals("DRAFT") ? "Lab Saved As Draft" : "Lab Published Successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Lab saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                     clearFields();
                     loadLabs();
                 });
@@ -120,7 +152,7 @@ public class LabsActivity extends AppCompatActivity {
 
     private void loadLabs() {
         new Thread(() -> {
-            List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext()).labDao().getAllLabs();
+            List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext()).labDao().getAllLabsSync();
 
             runOnUiThread(() -> {
                 labsContainer.removeAllViews();
@@ -175,8 +207,9 @@ public class LabsActivity extends AppCompatActivity {
                             btnPublish.setOnClickListener(v -> {
                                 new Thread(() -> {
                                     AppDatabase.getInstance(getApplicationContext()).labDao().updateLabStatus(labId, "PUBLISHED");
+                                    triggerSyncWorker();
                                     runOnUiThread(() -> {
-                                        Toast.makeText(LabsActivity.this, "Lab Published", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LabsActivity.this, "Lab published locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                                         loadLabs();
                                     });
                                 }).start();
@@ -188,8 +221,10 @@ public class LabsActivity extends AppCompatActivity {
                         btnDelete.setOnClickListener(v -> {
                             new Thread(() -> {
                                 AppDatabase.getInstance(getApplicationContext()).labDao().deleteLabById(labId);
+                                triggerSyncWorker();
+                                // FIXED: Corrected runrunOnUiThread to runOnUiThread
                                 runOnUiThread(() -> {
-                                    Toast.makeText(LabsActivity.this, "Lab Deleted", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LabsActivity.this, "Lab deleted locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                                     if (editingLabId == labId) clearFields();
                                     loadLabs();
                                 });

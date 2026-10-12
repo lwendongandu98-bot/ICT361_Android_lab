@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -17,8 +18,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
+import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GroupsActivity extends AppCompatActivity {
 
@@ -58,7 +65,31 @@ public class GroupsActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
+        // --- RETROFIT CONNECTION TEST ---
+        testServerConnection();
+
         loadGroupsFromDatabase();
+    }
+
+    private void testServerConnection() {
+        RetrofitClient.getApiService().getAllGroups().enqueue(new Callback<List<LabGroupEntity>>() {
+            @Override
+            public void onResponse(Call<List<LabGroupEntity>> call, Response<List<LabGroupEntity>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("RETROFIT_TEST", "Success! Connected to Node.js server. Groups received: " + (response.body() != null ? response.body().size() : 0));
+                    Toast.makeText(GroupsActivity.this, "Server connected successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.d("RETROFIT_TEST", "Server returned error code: " + response.code());
+                    Toast.makeText(GroupsActivity.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<LabGroupEntity>> call, Throwable t) {
+                Log.e("RETROFIT_TEST", "Connection failed: " + t.getMessage(), t);
+                Toast.makeText(GroupsActivity.this, "Connection failed! Check IP/Wi-Fi", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void createNewLabGroup(String name) {
@@ -69,10 +100,16 @@ public class GroupsActivity extends AppCompatActivity {
             if (existing != null) {
                 runOnUiThread(() -> Toast.makeText(this, "Group already exists!", Toast.LENGTH_SHORT).show());
             } else {
-                LabGroupEntity newGroup = new LabGroupEntity(name, "Lab Batch " + name);
+                // Instantiated with name and max occupancy integer (15) matching your updated entity
+                LabGroupEntity newGroup = new LabGroupEntity(name, 15);
                 db.labGroupDao().insertGroup(newGroup);
+
+                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
+                SyncHelper.triggerSync(this);
+                // --------------------------------------------------
+
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Group created successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Group created & sync scheduled!", Toast.LENGTH_SHORT).show();
                     etGroupName.setText("");
                     loadGroupsFromDatabase();
                 });

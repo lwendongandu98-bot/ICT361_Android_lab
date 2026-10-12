@@ -21,6 +21,10 @@ public interface StudentDao {
     @Query("SELECT * FROM users WHERE username = :username")
     StudentEntity getStudentById(String username);
 
+    // ADDED: LiveData version for reactive UI observation in profiles
+    @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
+    LiveData<StudentEntity> getStudentLiveById(String username);
+
     @Query("SELECT * FROM users")
     LiveData<List<StudentEntity>> getAllStudentsLive();
 

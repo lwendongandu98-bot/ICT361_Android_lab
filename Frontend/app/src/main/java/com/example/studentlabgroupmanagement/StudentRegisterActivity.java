@@ -17,6 +17,7 @@ import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +57,9 @@ public class StudentRegisterActivity extends AppCompatActivity {
     private void loadSpinnersData() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            List<CourseEntity> courses = db.courseDao().getAllCourses();
-            List<LabGroupEntity> groups = db.labGroupDao().getAllGroups();
+            // FIXED: Using synchronous query methods for background worker threads
+            List<CourseEntity> courses = db.courseDao().getAllCoursesSync();
+            List<LabGroupEntity> groups = db.labGroupDao().getAllGroupsSync();
 
             List<String> courseList = new ArrayList<>();
             if (courses != null) {
@@ -136,6 +138,10 @@ public class StudentRegisterActivity extends AppCompatActivity {
                 StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, selectedProgram, selectedGroup, "Student");
                 db.studentDao().insertStudent(newStudent);
 
+                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
+                SyncHelper.triggerSync(this);
+                // --------------------------------------------------
+
                 runOnUiThread(() -> {
                     SessionManager sessionManager = new SessionManager(this);
                     sessionManager.createLoginSession(username, "Student");
@@ -145,7 +151,7 @@ public class StudentRegisterActivity extends AppCompatActivity {
                     editor.putString("username", username);
                     editor.apply();
 
-                    Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Registration saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
 
                     Intent intent = new Intent(StudentRegisterActivity.this, StudentHomeActivity.class);
                     intent.putExtra("username", username);
