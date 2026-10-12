@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AssignStudentsActivity extends AppCompatActivity {
@@ -27,7 +28,6 @@ public class AssignStudentsActivity extends AppCompatActivity {
     private TextView txtTargetGroupTitle, txtTargetGroupCount;
     private EditText etSearchAvailable;
     private Spinner spinnerProgramFilter;
-    private Button btnEditGroupName;
     private LinearLayout containerAvailableStudents, containerGroupMembers;
 
     private String targetGroupName;
@@ -48,18 +48,13 @@ public class AssignStudentsActivity extends AppCompatActivity {
         txtTargetGroupCount = findViewById(R.id.txtTargetGroupCount);
         etSearchAvailable = findViewById(R.id.etSearchAvailable);
         spinnerProgramFilter = findViewById(R.id.spinnerProgramFilter);
-        btnEditGroupName = findViewById(R.id.btnEditGroupName);
         containerAvailableStudents = findViewById(R.id.containerAvailableStudents);
         containerGroupMembers = findViewById(R.id.containerGroupMembers);
 
         txtTargetGroupTitle.setText("Managing: " + targetGroupName);
 
-        String[] programs = {"All Programs", "BSc Computer Science", "BSc Information Technology", "BIT"};
-        ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, programs);
-        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerProgramFilter.setAdapter(spinAdapter);
-
-        btnEditGroupName.setOnClickListener(v -> showRenameGroupDialog());
+        // Fetch dynamic programs from Room DB instead of hardcoding
+        loadProgramsSpinner();
 
         etSearchAvailable.addTextChangedListener(new TextWatcher() {
             @Override
@@ -84,6 +79,29 @@ public class AssignStudentsActivity extends AppCompatActivity {
         });
 
         renderAllLists();
+    }
+
+    private void loadProgramsSpinner() {
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            List<String> programList = db.studentDao().getAllDistinctPrograms();
+
+            runOnUiThread(() -> {
+                List<String> programs = new ArrayList<>();
+                programs.add("All Programs");
+                if (programList != null) {
+                    for (String prog : programList) {
+                        if (prog != null && !prog.trim().isEmpty() && !programs.contains(prog.trim())) {
+                            programs.add(prog.trim());
+                        }
+                    }
+                }
+
+                ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(AssignStudentsActivity.this, android.R.layout.simple_spinner_item, programs);
+                spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerProgramFilter.setAdapter(spinAdapter);
+            });
+        }).start();
     }
 
     private void renderAllLists() {
@@ -229,39 +247,5 @@ public class AssignStudentsActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .create()
                 .show();
-    }
-
-    private void showRenameGroupDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Rename Lab Group");
-
-        final EditText input = new EditText(this);
-        input.setText(targetGroupName);
-        input.setSelectAllOnFocus(true);
-        builder.setView(input);
-
-        builder.setPositiveButton("Save", (dialog, which) -> {
-            String newName = input.getText().toString().trim();
-            if (newName.isEmpty()) {
-                Toast.makeText(this, "Group label cannot be blank!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            final String oldGroupName = targetGroupName;
-            new Thread(() -> {
-                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                db.studentDao().updateGroupMembersLabGroup(oldGroupName, newName);
-
-                runOnUiThread(() -> {
-                    targetGroupName = newName;
-                    txtTargetGroupTitle.setText("Managing: " + targetGroupName);
-                    Toast.makeText(this, "Group details updated!", Toast.LENGTH_SHORT).show();
-                    renderAllLists();
-                });
-            }).start();
-        });
-
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
     }
 }

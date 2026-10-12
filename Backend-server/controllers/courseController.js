@@ -1,6 +1,5 @@
 const db = require('../config/db');
 
-// Get all courses (used for dropdowns/spinners)
 exports.getAllCourses = async (req, res) => {
     try {
         const [courses] = await db.execute('SELECT * FROM courses');
@@ -11,9 +10,9 @@ exports.getAllCourses = async (req, res) => {
     }
 };
 
-// Create a new course
 exports.createCourse = async (req, res) => {
-    const { course_code, course_name } = req.body;
+    const course_code = req.body.course_code || req.body.courseCode;
+    const course_name = req.body.course_name || req.body.courseName;
 
     if (!course_code || !course_name) {
         return res.status(400).json({ message: 'Course code and course name are required' });
@@ -21,17 +20,18 @@ exports.createCourse = async (req, res) => {
 
     try {
         const [result] = await db.execute(
-            'INSERT INTO courses (course_code, course_name) VALUES (?, ?)',
+            `INSERT INTO courses (course_code, course_name) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE course_name = VALUES(course_name)`,
             [course_code, course_name]
         );
 
         res.status(201).json({
-            message: 'Course created successfully',
-            courseId: result.insertId
+            message: 'Course synced successfully',
+            courseId: result.insertId || null
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ message: 'Course code already exists' });
+            return res.status(409).json({ message: 'Course code already exists' });
         }
         res.status(500).json({ message: 'Database error', error: error.message });
     }

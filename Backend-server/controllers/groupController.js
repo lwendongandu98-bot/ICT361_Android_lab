@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// 1. Create a new lab group (CREATE)
+// 1. Create or sync a lab group
 exports.createGroup = async (req, res) => {
   const { group_name, max_occupancy } = req.body;
 
@@ -10,15 +10,19 @@ exports.createGroup = async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      'INSERT INTO lab_groups (group_name, max_occupancy) VALUES (?, ?)',
+      `INSERT INTO lab_groups (group_name, max_occupancy) VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE max_occupancy = VALUES(max_occupancy)`,
       [group_name, max_occupancy || 15]
     );
 
     res.status(201).json({
-      message: 'Group created successfully',
-      groupId: result.insertId
+      message: 'Group synced successfully',
+      groupId: result.insertId || null
     });
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'Group already exists' });
+    }
     console.error('Error creating group:', error);
     res.status(500).json({ message: 'Database error', error: error.message });
   }

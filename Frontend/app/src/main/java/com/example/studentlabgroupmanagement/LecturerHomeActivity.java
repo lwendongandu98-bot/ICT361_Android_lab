@@ -227,7 +227,13 @@ public class LecturerHomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_terms) {
             startActivity(new Intent(this, TermsActivity.class));
         } else if (id == R.id.nav_logout) {
-            Intent intent = new Intent(this, MainActivity.class);
+            // 1. Wipe out stored user session data
+            if (sessionManager != null) {
+                sessionManager.logoutUser();
+            }
+
+            // 2. Clear task history stack and direct cleanly back to LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();

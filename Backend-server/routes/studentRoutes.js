@@ -7,4 +7,7 @@ router.get('/search', studentController.searchStudents);
 router.post('/join-group', idempotency, studentController.joinGroup);
 router.get('/', studentController.getAllStudents);
 
+// --- ADDED TO SUPPORT ANDROID BACKGROUND SYNC (`api/students`) ---
+router.post('/', studentController.createStudent || require('../controllers/authController').registerStudent);
+
 module.exports = router;

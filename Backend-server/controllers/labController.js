@@ -1,8 +1,11 @@
 const db = require('../config/db');
 
-// 1. Create a Lab assignment
 exports.createLab = async (req, res) => {
-    const { title, description, due_date, file_path, status } = req.body;
+    const title = req.body.title;
+    const description = req.body.description;
+    const due_date = req.body.due_date || req.body.dueDate;
+    const file_path = req.body.file_path || req.body.filePath;
+    const status = req.body.status;
 
     if (!title || !due_date) {
         return res.status(400).json({ message: 'Title and due date are required' });
@@ -24,7 +27,6 @@ exports.createLab = async (req, res) => {
     }
 };
 
-// 2. Get all Labs
 exports.getAllLabs = async (req, res) => {
     try {
         const [labs] = await db.execute('SELECT * FROM labs ORDER BY created_at DESC');
@@ -35,9 +37,10 @@ exports.getAllLabs = async (req, res) => {
     }
 };
 
-// 3. Submit a Lab (Student action)
 exports.submitLab = async (req, res) => {
-    const { lab_id, student_id, file_path } = req.body;
+    const lab_id = req.body.lab_id || req.body.labId;
+    const student_id = req.body.student_id || req.body.studentId || req.body.studentNumber;
+    const file_path = req.body.file_path || req.body.filePath;
 
     if (!lab_id || !student_id || !file_path) {
         return res.status(400).json({ message: 'lab_id, student_id, and file_path are required' });
@@ -59,7 +62,6 @@ exports.submitLab = async (req, res) => {
     }
 };
 
-// 4. Get Submissions for a specific Lab (Lecturer view)
 exports.getSubmissionsByLab = async (req, res) => {
     const { labId } = req.params;
 

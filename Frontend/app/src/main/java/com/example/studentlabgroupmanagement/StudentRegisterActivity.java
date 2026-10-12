@@ -16,11 +16,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.OperationEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
 import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class StudentRegisterActivity extends AppCompatActivity {
 
@@ -57,7 +60,6 @@ public class StudentRegisterActivity extends AppCompatActivity {
     private void loadSpinnersData() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            // FIXED: Using synchronous query methods for background worker threads
             List<CourseEntity> courses = db.courseDao().getAllCoursesSync();
             List<LabGroupEntity> groups = db.labGroupDao().getAllGroupsSync();
 
@@ -137,6 +139,23 @@ public class StudentRegisterActivity extends AppCompatActivity {
             } else {
                 StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, selectedProgram, selectedGroup, "Student");
                 db.studentDao().insertStudent(newStudent);
+
+                // --- QUEUE OPERATION FOR BACKGROUND SYNCING ---
+                Gson gson = new Gson();
+                String payload = gson.toJson(newStudent);
+                String operationId = UUID.randomUUID().toString();
+
+                OperationEntity operation = new OperationEntity(
+                        operationId,
+                        username,
+                        username,
+                        "REGISTER_USER",
+                        payload,
+                        1,
+                        System.currentTimeMillis()
+                );
+                db.operationDao().insertOperation(operation);
+                // ----------------------------------------------
 
                 // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
                 SyncHelper.triggerSync(this);

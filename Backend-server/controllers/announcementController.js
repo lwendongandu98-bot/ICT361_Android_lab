@@ -1,6 +1,5 @@
 const db = require('../config/db');
 
-// Get all announcements
 exports.getAllAnnouncements = async (req, res) => {
     try {
         const [announcements] = await db.execute(`
@@ -16,9 +15,10 @@ exports.getAllAnnouncements = async (req, res) => {
     }
 };
 
-// Create a new announcement (Lecturer action)
 exports.createAnnouncement = async (req, res) => {
-    const { title, content, lecturer_id } = req.body;
+    const title = req.body.title;
+    const content = req.body.content || req.body.message;
+    const lecturer_id = req.body.lecturer_id || req.body.lecturerId;
 
     if (!title || !content) {
         return res.status(400).json({ message: 'Title and content are required' });

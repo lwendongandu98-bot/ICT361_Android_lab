@@ -45,4 +45,8 @@ public interface StudentDao {
 
     @Query("UPDATE users SET labGroup = :newName WHERE labGroup = :oldName")
     void updateGroupMembersLabGroup(String oldName, String newName);
+
+    // ADDED: Fetch unique programs dynamically for the filter dropdown
+    @Query("SELECT DISTINCT program FROM users WHERE program IS NOT NULL AND program != ''")
+    List<String> getAllDistinctPrograms();
 }

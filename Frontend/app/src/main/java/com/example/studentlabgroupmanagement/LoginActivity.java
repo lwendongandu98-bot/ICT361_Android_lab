@@ -1,106 +1,156 @@
 package com.example.studentlabgroupmanagement;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText etUsername;
-    private EditText etPassword;
-    private Spinner spinnerRole;
+    private EditText etUsername, etPassword;
+    private RadioGroup rgRole;
     private Button btnLogin;
-    private TextView tvRegister;
+    private TextView tvRegisterLink, tvForgotPassword;
 
-    private SessionManager sessionManager;
+    private SessionManager session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.loginactivity);
 
-        sessionManager = new SessionManager(this);
+        try {
+            session = new SessionManager(this);
+        } catch (Exception e) {
+            Log.e("LoginActivity", "SessionManager initialization failed", e);
+        }
 
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
-        spinnerRole = findViewById(R.id.spinnerRole);
+        rgRole = findViewById(R.id.rgRole);
         btnLogin = findViewById(R.id.btnLogin);
-        tvRegister = findViewById(R.id.tvRegister);
+        tvRegisterLink = findViewById(R.id.tvRegisterLink);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.role_array,
-                R.layout.spinner_item
-        );
-        adapter.setDropDownViewResource(R.layout.spinner_item);
-        spinnerRole.setAdapter(adapter);
+        if (etUsername == null || etPassword == null || rgRole == null || btnLogin == null) {
+            Toast.makeText(this, "Layout Error: Check LoginActivity.xml IDs", Toast.LENGTH_LONG).show();
+            return;
+        }
 
+        // LOGIN BUTTON
         btnLogin.setOnClickListener(v -> {
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String role = spinnerRole.getSelectedItem() != null
-                    ? spinnerRole.getSelectedItem().toString()
-                    : "Student";
+            final String username = etUsername.getText().toString().trim();
+            final String password = etPassword.getText().toString().trim();
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+            int selectedId = rgRole.getCheckedRadioButtonId();
+
+            if (selectedId == -1) {
+                Toast.makeText(LoginActivity.this, "Please select Student or Lecturer", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Room query on a background thread
+            RadioButton rbSelected = findViewById(selectedId);
+            if (rbSelected == null) {
+                Toast.makeText(LoginActivity.this, "Please select a valid role", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String selectedRoleText = rbSelected.getText().toString().trim();
+            final String role = selectedRoleText.equalsIgnoreCase("Student") ? "Student" : "Lecturer";
+
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             new Thread(() -> {
+                Log.d("LoginDebug", "Attempting login for username: '" + username + "' with role: '" + role + "'");
+
                 StudentEntity student = AppDatabase.getInstance(getApplicationContext())
                         .studentDao()
                         .getStudentById(username);
 
-                boolean isValid = student != null
-                        && password.equals(student.getPassword())
-                        && role.equalsIgnoreCase(student.getRole());
+                boolean userExists = (student != null);
+                boolean passwordMatch = false;
+                boolean roleMatch = false;
+
+                if (userExists) {
+                    passwordMatch = password.equals(student.getPassword());
+                    roleMatch = role.equalsIgnoreCase(student.getRole());
+                    Log.d("LoginDebug", "User found. Stored Password: '" + student.getPassword() + "', Stored Role: '" + student.getRole() + "'");
+                } else {
+                    Log.d("LoginDebug", "User NOT found in database for ID: " + username);
+                }
+
+                final boolean isValid = userExists && passwordMatch && roleMatch;
+                final boolean finalUserExists = userExists;
+                final boolean finalPasswordMatch = passwordMatch;
 
                 runOnUiThread(() -> {
                     if (isValid) {
-                        sessionManager.createLoginSession(username, role);
-
-                        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-                        sharedPref.edit().putString("username", username).apply();
-
-                        Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                        Intent intent;
-                        if ("Lecturer".equalsIgnoreCase(role)) {
-                            intent = new Intent(LoginActivity.this, LecturerHomeActivity.class);
-                        } else {
-                            intent = new Intent(LoginActivity.this, StudentHomeActivity.class);
+                        try {
+                            if (session != null) {
+                                session.createLoginSession(username, role);
+                            }
+                        } catch (Exception e) {
+                            Log.e("LoginActivity", "Session save error: " + e.getMessage());
                         }
-                        intent.putExtra("username", username);
-                        startActivity(intent);
-                        finish();
+
+                        Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
+
+                        if (role.equalsIgnoreCase("Student")) {
+                            startActivity(new Intent(LoginActivity.this, StudentHomeActivity.class));
+                            finish();
+                        } else if (role.equalsIgnoreCase("Lecturer")) {
+                            startActivity(new Intent(LoginActivity.this, LecturerHomeActivity.class));
+                            finish();
+                        }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                        if (!finalUserExists) {
+                            Toast.makeText(LoginActivity.this, "User does not exist in database!", Toast.LENGTH_SHORT).show();
+                        } else if (!finalPasswordMatch) {
+                            Toast.makeText(LoginActivity.this, "Incorrect password!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Role mismatch (Student/Lecturer)", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }).start();
         });
 
-        if (tvRegister != null) {
-            tvRegister.setOnClickListener(v -> {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
+        if (tvForgotPassword != null) {
+            tvForgotPassword.setOnClickListener(v ->
+                    startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class))
+            );
+        }
+
+        if (tvRegisterLink != null) {
+            tvRegisterLink.setOnClickListener(v -> {
+                int selectedId = rgRole.getCheckedRadioButtonId();
+
+                if (selectedId == -1) {
+                    Toast.makeText(LoginActivity.this, "Please select Student or Lecturer first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                RadioButton rbSelected = findViewById(selectedId);
+                String role = rbSelected.getText().toString();
+
+                if (role.equalsIgnoreCase("Student")) {
+                    startActivity(new Intent(LoginActivity.this, StudentRegisterActivity.class));
+                } else if (role.equalsIgnoreCase("Lecturer")) {
+                    startActivity(new Intent(LoginActivity.this, LecturerRegisterActivity.class));
+                }
             });
         }
     }

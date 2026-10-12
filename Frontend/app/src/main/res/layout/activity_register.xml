@@ -58,6 +58,8 @@
                         android:id="@+id/etUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
                         android:inputType="textPersonName"
                         android:maxLines="1" />
 
@@ -76,6 +78,8 @@
                         android:id="@+id/etName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
                         android:inputType="textPersonName"
                         android:maxLines="1" />
 
@@ -94,6 +98,8 @@
                         android:id="@+id/etStudentNum"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
                         android:inputType="number"
                         android:maxLines="1" />
 
@@ -112,6 +118,8 @@
                         android:id="@+id/etEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
                         android:inputType="textEmailAddress"
                         android:maxLines="1" />
 
@@ -131,6 +139,8 @@
                         android:id="@+id/etPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
                         android:inputType="textPassword"
                         android:maxLines="1" />
 
