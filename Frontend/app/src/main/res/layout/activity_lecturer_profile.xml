@@ -11,7 +11,8 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarProfile"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:background="#075EA8"
         app:title="Lecturer Profile"
         app:titleTextColor="#FFFFFF" />

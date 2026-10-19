@@ -15,12 +15,16 @@
 
         <!-- HEADER -->
         <LinearLayout
+            android:id="@+id/headerStudentDashboard"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:minHeight="80dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:background="@color/blue_primary">
 
             <ImageButton
@@ -80,7 +84,7 @@
                 <!-- WELCOME BANNER -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
+                    android:layout_height="140dp"
                     app:cardCornerRadius="20dp">
 
                     <LinearLayout
@@ -88,50 +92,35 @@
                         android:layout_height="match_parent"
                         android:background="#DFF1FF"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
+                        android:orientation="vertical"
                         android:padding="20dp">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvWelcomeName"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvWelcomeName"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Hello, Student"
-                                android:textColor="#000000"
-                                android:textSize="24sp"
-                                android:textStyle="bold"/>
-
-                            <TextView
-                                android:id="@+id/tvStudentProgram"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="Student"
-                                android:textColor="#000000"
-                                android:textSize="14sp"
-                                android:textStyle="bold"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
-                                android:text="Learn • Build • Achieve"
-                                android:textColor="@color/blue_primary"
-                                android:textStyle="bold"/>
-
-                        </LinearLayout>
+                            android:text="Hello, Student"
+                            android:textColor="#000000"
+                            android:textSize="24sp"
+                            android:textStyle="bold"/>
 
                         <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:gravity="center"
-                            android:text="💻"
-                            android:textSize="45sp"/>
+                            android:id="@+id/tvStudentProgram"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Student"
+                            android:textColor="#000000"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Learn • Build • Achieve"
+                            android:textColor="@color/blue_primary"
+                            android:textStyle="bold"/>
 
                     </LinearLayout>
 
@@ -158,7 +147,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardLabs"
                         android:layout_width="0dp"
-                        android:layout_height="190dp"
+                        android:layout_height="150dp"
                         android:layout_columnWeight="1"
                         android:layout_margin="6dp"
                         app:cardCornerRadius="20dp">
@@ -168,30 +157,23 @@
                             android:layout_height="match_parent"
                             android:background="#1565C0"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="20dp">
 
                             <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
                                 android:src="@drawable/baseline_computer_24"
                                 app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="12dp"
                                 android:text="Labs"
                                 android:textColor="#FFFFFF"
-                                android:textSize="18sp"
+                                android:textSize="22sp"
                                 android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="View lab work and submit assignments."
-                                android:textColor="#FFFFFF"
-                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -201,7 +183,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardMyGroups"
                         android:layout_width="0dp"
-                        android:layout_height="190dp"
+                        android:layout_height="150dp"
                         android:layout_columnWeight="1"
                         android:layout_margin="6dp"
                         app:cardCornerRadius="20dp">
@@ -211,30 +193,23 @@
                             android:layout_height="match_parent"
                             android:background="#1565C0"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="20dp">
 
                             <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
                                 android:src="@drawable/baseline_groups_24"
                                 app:tint="#FFFFFF"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:text="My Group"
+                                android:layout_marginTop="12dp"
+                                android:text="Groups"
                                 android:textColor="#FFFFFF"
-                                android:textSize="18sp"
+                                android:textSize="22sp"
                                 android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="View group members"
-                                android:textColor="#FFFFFF"
-                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -244,7 +219,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardProfile"
                         android:layout_width="0dp"
-                        android:layout_height="190dp"
+                        android:layout_height="150dp"
                         android:layout_columnWeight="1"
                         android:layout_margin="6dp"
                         app:cardCornerRadius="20dp">
@@ -254,30 +229,23 @@
                             android:layout_height="match_parent"
                             android:background="#1565C0"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="20dp">
 
                             <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
                                 android:src="@drawable/outline_3p_24"
                                 app:tint="#FFFFFF"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
+                                android:layout_marginTop="12dp"
                                 android:text="Profile"
                                 android:textColor="#FFFFFF"
-                                android:textSize="18sp"
+                                android:textSize="22sp"
                                 android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Manage account and details."
-                                android:textColor="#FFFFFF"
-                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -287,7 +255,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardAnnouncements"
                         android:layout_width="0dp"
-                        android:layout_height="190dp"
+                        android:layout_height="150dp"
                         android:layout_columnWeight="1"
                         android:layout_margin="6dp"
                         app:cardCornerRadius="20dp">
@@ -297,30 +265,25 @@
                             android:layout_height="match_parent"
                             android:background="#1565C0"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="20dp">
 
                             <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
                                 android:src="@drawable/baseline_campaign_24"
                                 app:tint="#FFFFFF" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:text="Announcements"
+                                android:layout_marginTop="12dp"
+                                android:text="Updates"
                                 android:textColor="#FFFFFF"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="View course notices and updates."
-                                android:textColor="#FFFFFF"
-                                android:textSize="12sp" />
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:maxLines="1"
+                                android:singleLine="true" />
 
                         </LinearLayout>
 
@@ -337,7 +300,13 @@
             android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:menu="@menu/bottom_menu"/>
+            android:background="@color/white"
+            app:elevation="8dp"
+            app:menu="@menu/bottom_menu"
+            app:itemBackground="@drawable/nav_item_background"
+            app:itemTextColor="@color/nav_item_text_color"
+            app:itemIconTint="@color/nav_item_icon_tint"
+            app:labelVisibilityMode="labeled" />
 
     </LinearLayout>
 
@@ -347,8 +316,16 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#FFFFFF"
+        android:background="#F7F2FA"
         app:headerLayout="@layout/nav_header_student"
-        app:menu="@menu/student_drawer_menu"/>
+        app:menu="@menu/student_drawer_menu"
+        app:itemBackground="@drawable/nav_item_background"
+        app:itemTextColor="@color/nav_item_text_color"
+        app:itemIconTint="@color/nav_item_icon_tint"
+        app:itemTextAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:itemHorizontalPadding="16dp"
+        app:itemVerticalPadding="12dp"
+        app:itemShapeInsetStart="12dp"
+        app:itemShapeInsetEnd="12dp" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

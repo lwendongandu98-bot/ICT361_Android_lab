@@ -9,7 +9,8 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarHelp"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:background="#1557B0"
         android:title="Help and Support"
         android:titleTextColor="@android:color/white" />

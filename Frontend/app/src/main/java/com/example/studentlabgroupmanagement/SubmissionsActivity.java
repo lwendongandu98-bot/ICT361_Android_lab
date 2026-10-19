@@ -12,7 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.work.Constraints;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
@@ -35,6 +38,7 @@ public class SubmissionsActivity extends AppCompatActivity {
     private LinearLayout containerSubmissions;
     private TextView tvNoSubmissions;
     private Button btnOpenCheckedLabs;
+    private Toolbar toolbarSubmissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,21 @@ public class SubmissionsActivity extends AppCompatActivity {
         containerSubmissions = findViewById(R.id.containerSubmissions);
         tvNoSubmissions = findViewById(R.id.tvNoSubmissions);
         btnOpenCheckedLabs = findViewById(R.id.btnOpenCheckedLabs);
+        toolbarSubmissions = findViewById(R.id.toolbarSubmissions);
+
+        // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+        if (toolbarSubmissions != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(toolbarSubmissions, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the blue background color still stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         // --- CHECK SERVER CONNECTION ON STARTUP ---
         NetworkCheckHelper.checkConnection(this);

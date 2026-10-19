@@ -15,6 +15,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
@@ -32,6 +35,7 @@ public class GroupsActivity extends AppCompatActivity {
     private EditText etGroupName, etSearchGroups;
     private Button btnCreateGroup;
     private LinearLayout groupsContainer;
+    private Toolbar toolbarGroups;
     private String filterQuery = "";
 
     @Override
@@ -39,10 +43,26 @@ public class GroupsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_groups);
 
+        // Bind layout views
         etGroupName = findViewById(R.id.etGroupName);
         etSearchGroups = findViewById(R.id.etSearchGroups);
         btnCreateGroup = findViewById(R.id.btnCreateGroup);
         groupsContainer = findViewById(R.id.groupsContainer);
+        toolbarGroups = findViewById(R.id.toolbarGroups);
+
+        // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+        if (toolbarGroups != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(toolbarGroups, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the blue background color still stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         btnCreateGroup.setOnClickListener(v -> {
             String groupName = etGroupName.getText().toString().trim();
@@ -100,7 +120,6 @@ public class GroupsActivity extends AppCompatActivity {
             if (existing != null) {
                 runOnUiThread(() -> Toast.makeText(this, "Group already exists!", Toast.LENGTH_SHORT).show());
             } else {
-                // Instantiated with name and max occupancy integer (15) matching your updated entity
                 LabGroupEntity newGroup = new LabGroupEntity(name, 15);
                 db.labGroupDao().insertGroup(newGroup);
 
@@ -139,7 +158,6 @@ public class GroupsActivity extends AppCompatActivity {
 
                     txtTitle.setText(name);
 
-                    // Fetch student count asynchronously to prevent blocking the UI thread
                     new Thread(() -> {
                         int count = db.studentDao().getStudentCountByGroup(name);
                         runOnUiThread(() -> txtCount.setText("Occupancy: " + count + " / 15 Members Max"));

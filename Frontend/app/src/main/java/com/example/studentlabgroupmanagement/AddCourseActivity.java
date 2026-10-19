@@ -8,6 +8,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
@@ -24,6 +27,7 @@ public class AddCourseActivity extends AppCompatActivity {
     private EditText etCourseName;
     private Button btnAddCourse;
     private ListView listViewCourses;
+    private Toolbar toolbarCourses;
 
     private CoursesViewModel coursesViewModel;
     private ArrayAdapter<String> adapter;
@@ -39,6 +43,19 @@ public class AddCourseActivity extends AppCompatActivity {
         etCourseName = findViewById(R.id.etCourseName);
         btnAddCourse = findViewById(R.id.btnAddCourse);
         listViewCourses = findViewById(R.id.listViewCourses);
+        toolbarCourses = findViewById(R.id.toolbarCourses);
+
+        // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+        ViewCompat.setOnApplyWindowInsetsListener(toolbarCourses, (v, windowInsets) -> {
+            int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+            // Set top padding to the height of the status bar so content doesn't clip,
+            // while the blue background color still stretches to the absolute top edge!
+            v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+            return windowInsets;
+        });
+        // ------------------------------------------------
 
         // Initialize ViewModel
         coursesViewModel = new ViewModelProvider(this).get(CoursesViewModel.class);

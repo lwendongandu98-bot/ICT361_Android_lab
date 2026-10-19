@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected state uses primary blue -->
+    <item android:state_checked="true" android:color="@color/blue_primary" />
+    <!-- Unselected state uses muted dark/blue tone -->
+    <item android:color="#555555" />
+</selector>

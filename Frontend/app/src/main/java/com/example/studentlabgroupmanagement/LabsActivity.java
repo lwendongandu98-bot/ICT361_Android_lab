@@ -14,6 +14,9 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.work.Constraints;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
@@ -41,6 +44,7 @@ public class LabsActivity extends AppCompatActivity {
     private Button btnPublishLab;
 
     private LinearLayout labsContainer;
+    private Toolbar toolbarLabs;
 
     private String selectedFilePath = "";
     private int editingLabId = -1;
@@ -74,6 +78,21 @@ public class LabsActivity extends AppCompatActivity {
         btnPublishLab = findViewById(R.id.btnPublishLab);
 
         labsContainer = findViewById(R.id.labsContainer);
+        toolbarLabs = findViewById(R.id.toolbarLabs);
+
+        // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+        if (toolbarLabs != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(toolbarLabs, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the blue background color still stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         // --- CHECK SERVER CONNECTION ON STARTUP ---
         NetworkCheckHelper.checkConnection(this);
@@ -222,7 +241,6 @@ public class LabsActivity extends AppCompatActivity {
                             new Thread(() -> {
                                 AppDatabase.getInstance(getApplicationContext()).labDao().deleteLabById(labId);
                                 triggerSyncWorker();
-                                // FIXED: Corrected runrunOnUiThread to runOnUiThread
                                 runOnUiThread(() -> {
                                     Toast.makeText(LabsActivity.this, "Lab deleted locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                                     if (editingLabId == labId) clearFields();

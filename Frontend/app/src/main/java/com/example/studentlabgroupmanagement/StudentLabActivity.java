@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
@@ -34,6 +36,7 @@ public class StudentLabActivity extends AppCompatActivity {
 
     private LinearLayout containerLecturerLabs;
     private TextView tvNoLecturerLabs;
+    private LinearLayout toolbarStudentLabs; // Corrected type to LinearLayout
     private int selectedLabIdForSubmission = -1;
     private SessionManager sessionManager;
 
@@ -53,6 +56,21 @@ public class StudentLabActivity extends AppCompatActivity {
 
         containerLecturerLabs = findViewById(R.id.containerLecturerLabs);
         tvNoLecturerLabs = findViewById(R.id.tvNoLecturerLabs);
+        toolbarStudentLabs = findViewById(R.id.toolbarStudentLabs);
+
+        // --- DYNAMICALLY PUSH HEADER BELOW STATUS BAR ---
+        if (toolbarStudentLabs != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(toolbarStudentLabs, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the background color stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight + 8, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         // --- CHECK SERVER CONNECTION ON STARTUP ---
         NetworkCheckHelper.checkConnection(this);
@@ -110,7 +128,6 @@ public class StudentLabActivity extends AppCompatActivity {
 
     private void loadLecturerPublishedLabs() {
         new Thread(() -> {
-            // FIXED: Using getAllLabsSync() to fetch the list synchronously on this background thread
             List<LabEntity> labs = AppDatabase.getInstance(getApplicationContext())
                     .labDao()
                     .getAllLabsSync();

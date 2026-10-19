@@ -25,11 +25,17 @@
     <color name="card_green">#388E3C</color>
     <color name="card_orange">#F57C00</color>
 
-
-
     <!-- Quick Access Icon Background tints -->
     <color name="tint_blue">#E3F2FD</color>
     <color name="tint_red_bg">#FFEBEE</color>
     <color name="tint_green">#E8F5E9</color>
     <color name="tint_orange">#FFF3E0</color>
+
+    <!-- Navigation Drawer Material 3 Pill & State Colors -->
+    <color name="nav_pill_selected">#ECE6F0</color>
+    <color name="nav_pill_pressed">#F3EDF7</color>
+    <color name="nav_drawer_bg">#F7F2FA</color>
+    <color name="nav_text_selected">#1D1B20</color>
+    <color name="nav_text_unselected">#49454F</color>
+    <color name="nav_icon_selected">#4A4458</color>
 </resources>

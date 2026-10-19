@@ -14,6 +14,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity; // Or LecturerEntity depending on your schema
@@ -69,6 +71,18 @@ public class LecturerProfileActivity extends AppCompatActivity {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
             toolbar.setNavigationOnClickListener(v -> finish());
+
+            // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+            ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the background color still stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+            // ------------------------------------------------
         }
 
         imgProfile = findViewById(R.id.imgProfile);
@@ -144,7 +158,6 @@ public class LecturerProfileActivity extends AppCompatActivity {
     private void loadLecturerData() {
         if (username != null && !username.isEmpty()) {
             // Observe the profile data reactively from Room/Repository
-            // (Note: Adjust parameter type in ViewModel if using a dedicated LecturerEntity instead of StudentEntity)
             profileViewModel.getLecturerProfile(username).observe(this, lecturer -> {
                 if (lecturer != null) {
                     currentLecturer = lecturer;

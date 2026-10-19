@@ -14,6 +14,8 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
@@ -27,6 +29,7 @@ public class StudentHomeActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ImageButton menuButton;
     private BottomNavigationView bottomNavigation;
+    private LinearLayout headerStudentDashboard;
 
     private TextView tvWelcomeName;
     private TextView tvStudentProgram;
@@ -52,6 +55,21 @@ public class StudentHomeActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.navigationView);
         menuButton = findViewById(R.id.menuButton);
         bottomNavigation = findViewById(R.id.bottomNavigation);
+        headerStudentDashboard = findViewById(R.id.headerStudentDashboard);
+
+        // --- DYNAMICALLY PUSH HEADER BELOW STATUS BAR ---
+        if (headerStudentDashboard != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(headerStudentDashboard, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the status bar height so content doesn't clip,
+                // while the blue background color stretches to the top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight + 8, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
         tvStudentProgram = findViewById(R.id.tvStudentProgram);

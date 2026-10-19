@@ -10,11 +10,14 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
@@ -26,6 +29,7 @@ public class StudentProfileActivity extends AppCompatActivity {
     private ImageView imgProfile;
     private EditText etStudentName, etStudentEmail, etStudentProgram, etStudentAge;
     private Button btnUpdateProfile, btnBackToDashboard;
+    private LinearLayout headerProfile;
 
     private SessionManager sessionManager;
     private String currentUsername;
@@ -58,6 +62,21 @@ public class StudentProfileActivity extends AppCompatActivity {
         etStudentAge = findViewById(R.id.etStudentAge);
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
         btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
+        headerProfile = findViewById(R.id.headerProfile); // Ensure your activity_student_profile.xml top header layout has this ID
+
+        // --- DYNAMICALLY PUSH HEADER BELOW STATUS BAR ---
+        if (headerProfile != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(headerProfile, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the background color stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight + 16, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),

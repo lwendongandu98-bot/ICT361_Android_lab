@@ -1,89 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- Screen Header Title -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Groups Management"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#311B92" />
-
-    <!-- Section: Create New Group -->
-    <EditText
-        android:id="@+id/etGroupName"
-        android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_marginTop="16dp"
-        android:hint="Enter Group Name (e.g., Group A)"
-        android:inputType="text"
-        android:background="@android:drawable/editbox_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:gravity="center_vertical"/>
-
-    <Button
-        android:id="@+id/btnCreateGroup"
+    <!-- TOOLBAR WITH DARK BLUE COLOR MATCHING DASHBOARD -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarGroups"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Create Group"
-        android:backgroundTint="#311B92"
-        android:textColor="#FFFFFF" />
+        android:minHeight="?attr/actionBarSize"
+        android:background="#1565C0">
 
-    <!-- Divider Line -->
-    <View
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Groups Management"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- CONTENT CONTAINER -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#DDDDDD"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Section: Filter/Search Existing Groups -->
-    <EditText
-        android:id="@+id/etSearchGroups"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:hint="🔍 Search active lab batches..."
-        android:inputType="text"
-        android:textSize="14sp"
-        android:background="@android:drawable/editbox_background"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="8dp"/>
+        <!-- Section: Create New Group -->
+        <EditText
+            android:id="@+id/etGroupName"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="4dp"
+            android:hint="Enter Group Name (e.g., Group A)"
+            android:inputType="text"
+            android:background="@android:drawable/editbox_background"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center_vertical"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Active Lab Batches"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="#666666"
-        android:layout_marginBottom="8dp"/>
-
-    <!-- Scrollable content area for inflated group rows -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/groupsContainer"
+        <Button
+            android:id="@+id/btnCreateGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:layout_marginTop="12dp"
+            android:text="Create Group"
+            android:backgroundTint="#1565C0"
+            android:textColor="#FFFFFF" />
 
-    </ScrollView>
+        <!-- Divider Line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Section: Filter/Search Existing Groups -->
+        <EditText
+            android:id="@+id/etSearchGroups"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="🔍 Search active lab batches..."
+            android:inputType="text"
+            android:textSize="14sp"
+            android:background="@android:drawable/editbox_background"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Active Lab Batches"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Scrollable content area for inflated group rows -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/groupsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </ScrollView>
+
+    </LinearLayout>
 
 </LinearLayout>

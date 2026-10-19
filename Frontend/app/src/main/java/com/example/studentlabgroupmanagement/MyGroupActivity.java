@@ -7,6 +7,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
@@ -16,7 +18,7 @@ import java.util.List;
 public class MyGroupActivity extends AppCompatActivity {
 
     private TextView tvGroupNameHeader, tvMemberCountHeader, tvNoMembers;
-    private LinearLayout containerGroupMembers;
+    private LinearLayout containerGroupMembers, headerGroup;
 
     private SessionManager session;
 
@@ -36,6 +38,21 @@ public class MyGroupActivity extends AppCompatActivity {
         tvMemberCountHeader = findViewById(R.id.tvMemberCountHeader);
         tvNoMembers = findViewById(R.id.tvNoMembers);
         containerGroupMembers = findViewById(R.id.containerGroupMembers);
+        headerGroup = findViewById(R.id.headerAssignStudents); // Ensure your activity_my_group.xml header banner has this ID
+
+        // --- DYNAMICALLY PUSH HEADER BELOW STATUS BAR ---
+        if (headerGroup != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(headerGroup, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the blue background color stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight + 24, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
 
         loadGroupMembers();
     }

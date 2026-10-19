@@ -12,7 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
@@ -29,6 +32,7 @@ public class CheckedLabsActivity extends AppCompatActivity {
     private LinearLayout containerCheckedLabs;
     private TextView tvNoCheckedLabs;
     private Button btnBackToPending;
+    private Toolbar toolbarCheckedLabs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +41,23 @@ public class CheckedLabsActivity extends AppCompatActivity {
 
         containerCheckedLabs = findViewById(R.id.containerCheckedLabs);
         tvNoCheckedLabs = findViewById(R.id.tvNoCheckedLabs);
-
         btnBackToPending = findViewById(R.id.btnBackToPending);
+        toolbarCheckedLabs = findViewById(R.id.toolbarCheckedLabs);
+
+        // --- DYNAMICALLY PUSH TOOLBAR BELOW STATUS BAR ---
+        if (toolbarCheckedLabs != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(toolbarCheckedLabs, (v, windowInsets) -> {
+                int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                // Set top padding to the height of the status bar so content doesn't clip,
+                // while the blue background color still stretches to the absolute top edge!
+                v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+
+                return windowInsets;
+            });
+        }
+        // ------------------------------------------------
+
         if (btnBackToPending != null) {
             btnBackToPending.setOnClickListener(v -> finish());
         }
