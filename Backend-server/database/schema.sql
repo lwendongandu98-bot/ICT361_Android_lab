@@ -63,10 +63,12 @@ CREATE TABLE submissions (
     file_path VARCHAR(255) NOT NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('PENDING', 'CHECKED') DEFAULT 'PENDING',
+    grade VARCHAR(50) NULL,
+    checked_at DATETIME NULL,
+    feedback TEXT NULL,
     FOREIGN KEY (lab_id) REFERENCES labs(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
-
 -- 8. Announcements Table (Stores broadcasts posted by lecturers)
 CREATE TABLE announcements (
     id INT AUTO_INCREMENT PRIMARY KEY,

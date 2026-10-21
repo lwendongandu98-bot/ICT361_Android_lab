@@ -20,7 +20,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
-import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LecturerEntity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.navigation.NavigationView;
@@ -173,19 +173,20 @@ public class LecturerHomeActivity extends AppCompatActivity
     private void loadLecturerInfo() {
         if (currentUsername != null && !currentUsername.isEmpty()) {
             new Thread(() -> {
-                StudentEntity lecturer = AppDatabase.getInstance(getApplicationContext())
-                        .studentDao()
-                        .getStudentById(currentUsername);
+                // Query LecturerDao instead of StudentDao to retrieve correct lecturer profile fields
+                LecturerEntity lecturer = AppDatabase.getInstance(getApplicationContext())
+                        .lecturerDao()
+                        .getLecturerByEmployeeNo(currentUsername);
 
                 runOnUiThread(() -> {
                     SharedPreferences prefs = getSharedPreferences("LecturerPrefs", Context.MODE_PRIVATE);
 
-                    String lecturerName = lecturer != null && lecturer.getName() != null ? lecturer.getName() : null;
+                    String lecturerName = lecturer != null && lecturer.getFullName() != null ? lecturer.getFullName() : null;
                     if (lecturerName == null || lecturerName.isEmpty()) {
                         lecturerName = prefs.getString("name_" + currentUsername, currentUsername);
                     }
 
-                    String lecturerDept = lecturer != null && lecturer.getProgram() != null ? lecturer.getProgram() : null;
+                    String lecturerDept = lecturer != null && lecturer.getDepartment() != null ? lecturer.getDepartment() : null;
                     if (lecturerDept == null || lecturerDept.isEmpty()) {
                         lecturerDept = prefs.getString("department_" + currentUsername, "Department Not Specified");
                     }
@@ -227,12 +228,10 @@ public class LecturerHomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_terms) {
             startActivity(new Intent(this, TermsActivity.class));
         } else if (id == R.id.nav_logout) {
-            // 1. Wipe out stored user session data
             if (sessionManager != null) {
                 sessionManager.logoutUser();
             }
 
-            // 2. Clear task history stack and direct cleanly back to LoginActivity
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);

@@ -15,9 +15,12 @@ exports.createGroup = async (req, res) => {
       [group_name, max_occupancy || 15]
     );
 
+    // Return JSON containing the entity fields so Retrofit populates response.body() successfully
     res.status(201).json({
       message: 'Group synced successfully',
-      groupId: result.insertId || null
+      groupId: result.insertId || null,
+      groupName: group_name,
+      maxOccupancy: max_occupancy || 15
     });
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {

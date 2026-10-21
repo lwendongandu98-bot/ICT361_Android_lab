@@ -4,6 +4,9 @@ const authController = require('../controllers/authController');
 
 // Authentication API Endpoints
 router.post('/register-student', authController.registerStudent);
+router.post('/register', authController.registerStudent); // Added alias for Android app flexibility
+router.post('/signup', authController.registerStudent);     // Added alias for Android app flexibility
+
 router.post('/register-lecturer', authController.registerLecturer);
 router.post('/login', authController.login);
 

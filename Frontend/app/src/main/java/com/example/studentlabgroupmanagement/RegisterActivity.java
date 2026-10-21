@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,10 +23,15 @@ import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -62,7 +68,7 @@ public class RegisterActivity extends AppCompatActivity {
             String labGroup = spinnerGroup.getSelectedItem() != null ? spinnerGroup.getSelectedItem().toString() : "";
             String role = "Student";
 
-            if (username.isEmpty() || name.isEmpty() || password.isEmpty()) {
+            if (username.isEmpty() || name.isEmpty() || password.isEmpty() || studentNum.isEmpty() || email.isEmpty()) {
                 Toast.makeText(RegisterActivity.this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -72,17 +78,43 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
+            btnRegister.setEnabled(false); // Prevent duplicate taps
+
             new Thread(() -> {
                 AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                StudentEntity existing = db.studentDao().getStudentById(username);
+                StudentEntity existing = db.studentDao().getStudentByIdentifier(username);
 
                 if (existing != null) {
-                    runOnUiThread(() -> Toast.makeText(RegisterActivity.this, "Registration Failed. Username may already exist.", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        Toast.makeText(RegisterActivity.this, "Registration Failed. Username or account may already exist.", Toast.LENGTH_LONG).show();
+                        btnRegister.setEnabled(true);
+                    });
                 } else {
-                    StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, program, labGroup, role);
+                    // Hash password with SHA-256 for local Room compatibility
+                    String hashedPassword = hashPassword(password);
+                    StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, hashedPassword, program, labGroup, role);
+
+                    // 1. Save locally into Room database immediately so UI/Database Inspector shows it right away
                     db.studentDao().insertStudent(newStudent);
 
-                    // --- TRIGGER WORKMANAGER BACKGROUND SYNC ---
+                    // 2. Push asynchronously to MySQL server via Retrofit
+                    RetrofitClient.getApiService().createStudent(newStudent).enqueue(new Callback<StudentEntity>() {
+                        @Override
+                        public void onResponse(Call<StudentEntity> call, Response<StudentEntity> response) {
+                            if (response.isSuccessful()) {
+                                Log.d("RegisterSync", "Student successfully pushed to MySQL server!");
+                            } else {
+                                Log.e("RegisterSync", "MySQL server rejected registration code: " + response.code());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<StudentEntity> call, Throwable t) {
+                            Log.w("RegisterSync", "Offline mode or server unreachable: " + t.getMessage() + ". WorkManager backup queue will handle sync.");
+                        }
+                    });
+
+                    // 3. Trigger WorkManager backup sync task with REPLACE policy
                     Constraints constraints = new Constraints.Builder()
                             .setRequiredNetworkType(NetworkType.CONNECTED)
                             .build();
@@ -93,19 +125,19 @@ public class RegisterActivity extends AppCompatActivity {
 
                     WorkManager.getInstance(getApplicationContext()).enqueueUniqueWork(
                             "FullAppSyncWork",
-                            ExistingWorkPolicy.KEEP,
+                            ExistingWorkPolicy.REPLACE,
                             syncRequest
                     );
-                    // ------------------------------------------
 
+                    // 4. Finalize session and navigate to home screen on Main Thread
                     runOnUiThread(() -> {
                         SessionManager sessionManager = new SessionManager(RegisterActivity.this);
-                        sessionManager.createLoginSession(username, role);
+                        sessionManager.createLoginSession(username, studentNum, email, name, role);
 
                         SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
                         sharedPref.edit().putString("username", username).apply();
 
-                        Toast.makeText(RegisterActivity.this, "Registration saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(RegisterActivity.this, StudentHomeActivity.class);
                         intent.putExtra("username", username);
@@ -124,7 +156,6 @@ public class RegisterActivity extends AppCompatActivity {
     private void loadSpinnersData() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            // FIXED: Using synchronous query methods for background worker threads
             List<CourseEntity> courses = db.courseDao().getAllCoursesSync();
             List<LabGroupEntity> groups = db.labGroupDao().getAllGroupsSync();
 
@@ -158,5 +189,22 @@ public class RegisterActivity extends AppCompatActivity {
                 spinnerGroup.setAdapter(groupAdapter);
             });
         }).start();
+    }
+
+    // Helper method to hash passwords using SHA-256 for local Room compatibility
+    private String hashPassword(String password) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes("UTF-8"));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

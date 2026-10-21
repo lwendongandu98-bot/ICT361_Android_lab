@@ -4,6 +4,7 @@ import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntit
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LecturerEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
 
@@ -65,4 +66,8 @@ public interface ApiService {
 
     @POST("api/lecturers/update")
     Call<StudentEntity> updateLecturerProfile(@Body StudentEntity lecturer);
+
+    // --- Lecturer Registration ---
+    @POST("api/lecturers")
+    Call<Void> registerLecturer(@Body LecturerEntity lecturer);
 }

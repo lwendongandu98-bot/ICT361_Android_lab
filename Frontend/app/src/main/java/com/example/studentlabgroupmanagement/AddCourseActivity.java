@@ -1,6 +1,7 @@
 package com.example.studentlabgroupmanagement;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,13 +14,19 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.repository.GroupRepository;
 import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 import com.example.studentlabgroupmanagement.ui.viewmodel.CoursesViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddCourseActivity extends AppCompatActivity {
 
@@ -101,6 +108,7 @@ public class AddCourseActivity extends AppCompatActivity {
                         Toast.makeText(AddCourseActivity.this, message, Toast.LENGTH_SHORT).show();
                         etCourseCode.setText("");
                         etCourseName.setText("");
+                        syncAndLoadCourses(); // Refresh after creating a new course
                     });
                 }
 
@@ -111,6 +119,46 @@ public class AddCourseActivity extends AppCompatActivity {
                     });
                 }
             });
+        });
+
+        // Trigger network pull synchronization on start
+        syncAndLoadCourses();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Sync whenever the activity comes back into focus
+        syncAndLoadCourses();
+    }
+
+    private void syncAndLoadCourses() {
+        // 1. Silently pull latest courses from the Node.js backend server
+        RetrofitClient.getApiService().getAllCourses().enqueue(new Callback<List<CourseEntity>>() {
+            @Override
+            public void onResponse(Call<List<CourseEntity>> call, Response<List<CourseEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<CourseEntity> serverCourses = response.body();
+
+                    // 2. Save fetched courses into local Room database in the background for offline access
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (CourseEntity course : serverCourses) {
+                            try {
+                                db.courseDao().insertCourse(course);
+                            } catch (Exception e) {
+                                Log.w("CourseSync", "Course already exists or update skipped: " + course.getCourseCode());
+                            }
+                        }
+                    }).start();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CourseEntity>> call, Throwable t) {
+                // Offline fallback: LiveData will still display whatever is locally cached in Room
+                Log.w("CourseSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+            }
         });
     }
 }

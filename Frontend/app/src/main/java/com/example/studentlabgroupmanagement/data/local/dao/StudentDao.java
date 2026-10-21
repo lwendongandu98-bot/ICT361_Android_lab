@@ -21,7 +21,10 @@ public interface StudentDao {
     @Query("SELECT * FROM users WHERE username = :username")
     StudentEntity getStudentById(String username);
 
-    // ADDED: LiveData version for reactive UI observation in profiles
+    // FIXED: Using exact entity column names (studentNum and email)
+    @Query("SELECT * FROM users WHERE username = :identifier OR email = :identifier OR studentNum = :identifier LIMIT 1")
+    StudentEntity getStudentByIdentifier(String identifier);
+
     @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
     LiveData<StudentEntity> getStudentLiveById(String username);
 
@@ -46,7 +49,6 @@ public interface StudentDao {
     @Query("UPDATE users SET labGroup = :newName WHERE labGroup = :oldName")
     void updateGroupMembersLabGroup(String oldName, String newName);
 
-    // ADDED: Fetch unique programs dynamically for the filter dropdown
     @Query("SELECT DISTINCT program FROM users WHERE program IS NOT NULL AND program != ''")
     List<String> getAllDistinctPrograms();
 }

@@ -3,12 +3,20 @@ package com.example.studentlabgroupmanagement.data.local.entity;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 @Entity(tableName = "announcements")
 public class AnnouncementEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @SerializedName(value = "title", alternate = {"announcementTitle", "heading"})
     private String title;
+
+    @SerializedName(value = "message", alternate = {"content", "body", "announcementMessage"})
     private String message;
+
+    @SerializedName(value = "date", alternate = {"created_at", "createdAt", "timestamp"})
     private String date;
 
     public AnnouncementEntity() {}

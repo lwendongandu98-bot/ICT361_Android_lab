@@ -5,7 +5,9 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+
 import java.util.List;
 
 @Dao
@@ -17,7 +19,7 @@ public interface SubmissionDao {
     @Query("SELECT * FROM submissions")
     LiveData<List<SubmissionEntity>> getAllSubmissions();
 
-    // Synchronous query for background workers
+    // Synchronous query for background workers and sync routines
     @Query("SELECT * FROM submissions")
     List<SubmissionEntity> getAllSubmissionsSync();
 
@@ -27,9 +29,11 @@ public interface SubmissionDao {
     @Query("SELECT * FROM submissions WHERE status = 'CHECKED'")
     List<SubmissionEntity> getCheckedSubmissions();
 
-    @Query("UPDATE submissions SET status = 'CHECKED' WHERE id = :submissionId")
-    void markAsChecked(int submissionId);
+    // Updates status to CHECKED and sets the checked timestamp so date headers render properly
+    @Query("UPDATE submissions SET status = 'CHECKED', checked_at = :checkedAt WHERE id = :submissionId")
+    void markSubmissionAsChecked(int submissionId, String checkedAt);
 
-    @Query("UPDATE submissions SET status = 'CHECKED' WHERE id = :submissionId")
+    // Convenience overload for single-argument calls (auto-sets current datetime)
+    @Query("UPDATE submissions SET status = 'CHECKED', checked_at = datetime('now') WHERE id = :submissionId")
     void markSubmissionAsChecked(int submissionId);
 }

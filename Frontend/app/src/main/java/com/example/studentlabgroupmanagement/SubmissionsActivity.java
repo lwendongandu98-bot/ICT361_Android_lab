@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,7 @@ import androidx.work.WorkManager;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.io.File;
@@ -32,6 +34,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SubmissionsActivity extends AppCompatActivity {
 
@@ -75,13 +81,47 @@ public class SubmissionsActivity extends AppCompatActivity {
             });
         }
 
-        loadSubmissions();
+        syncAndLoadSubmissions();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadSubmissions();
+        syncAndLoadSubmissions();
+    }
+
+    private void syncAndLoadSubmissions() {
+        // 1. Silently pull latest submissions from the Node.js backend server
+        RetrofitClient.getApiService().getAllSubmissions().enqueue(new Callback<List<SubmissionEntity>>() {
+            @Override
+            public void onResponse(Call<List<SubmissionEntity>> call, Response<List<SubmissionEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<SubmissionEntity> serverSubmissions = response.body();
+
+                    // 2. Save fetched submissions into local Room database for offline access
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (SubmissionEntity sub : serverSubmissions) {
+                            try {
+                                db.submissionDao().insertSubmission(sub);
+                            } catch (Exception e) {
+                                Log.w("SubmissionsSync", "Submission already exists or update skipped: " + sub.getId());
+                            }
+                        }
+                        // 3. Refresh UI from local cache
+                        loadSubmissions();
+                    }).start();
+                } else {
+                    loadSubmissions();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<SubmissionEntity>> call, Throwable t) {
+                Log.w("SubmissionsSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+                loadSubmissions();
+            }
+        });
     }
 
     private void loadSubmissions() {
@@ -162,7 +202,7 @@ public class SubmissionsActivity extends AppCompatActivity {
 
                                 runOnUiThread(() -> {
                                     Toast.makeText(SubmissionsActivity.this, "Submission marked as checked locally! Will sync when online.", Toast.LENGTH_SHORT).show();
-                                    loadSubmissions();
+                                    syncAndLoadSubmissions();
                                 });
                             }).start();
                         });

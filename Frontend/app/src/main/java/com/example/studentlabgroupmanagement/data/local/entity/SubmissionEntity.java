@@ -1,18 +1,36 @@
 package com.example.studentlabgroupmanagement.data.local.entity;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
+import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "submissions")
 public class SubmissionEntity {
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private Integer id; // Wrapper Integer allows nulls so MySQL auto-increment works on sync
+
+    @SerializedName(value = "lab_id", alternate = {"labId"})
     private int labId;
+
+    @SerializedName(value = "student_number", alternate = {"studentNumber", "studentId"})
     private String studentNumber;
+
+    @SerializedName(value = "file_path", alternate = {"filePath", "file"})
     private String filePath;
+
+    @SerializedName(value = "submitted_at", alternate = {"submittedAt", "createdAt"})
     private String submittedAt;
+
+    @SerializedName(value = "grade", alternate = {"score", "marks"})
     private String grade;
+
+    @SerializedName(value = "status", alternate = {"submissionStatus"})
     private String status;
+
+    @ColumnInfo(name = "checked_at")
+    @SerializedName(value = "checked_at", alternate = {"checkedAt", "gradedAt"})
     private String checkedAt;
 
     // Default constructor required by Room
@@ -28,8 +46,8 @@ public class SubmissionEntity {
         this.checkedAt = checkedAt;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public int getLabId() { return labId; }
     public void setLabId(int labId) { this.labId = labId; }

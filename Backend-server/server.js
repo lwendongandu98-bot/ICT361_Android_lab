@@ -12,6 +12,7 @@ const courseRoutes = require('./routes/courseRoutes');
 const labRoutes = require('./routes/labRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
+const lecturerRoutes = require('./routes/lecturerRoutes'); // <-- Added Lecturer Route Import
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/labs', labRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/lecturers', lecturerRoutes); // <-- Added Lecturer Route Mount
 
 // Health Check Endpoint (Matches RetrofitClient BASE_URL root test)
 app.get('/', (req, res) => {

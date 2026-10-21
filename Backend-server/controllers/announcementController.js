@@ -16,23 +16,48 @@ exports.getAllAnnouncements = async (req, res) => {
 };
 
 exports.createAnnouncement = async (req, res) => {
-    const title = req.body.title;
+    const { id, title } = req.body;
     const content = req.body.content || req.body.message;
-    const lecturer_id = req.body.lecturer_id || req.body.lecturerId;
+    const lecturerIdentifier = req.body.lecturer_id || req.body.lecturerId;
 
     if (!title || !content) {
         return res.status(400).json({ message: 'Title and content are required' });
     }
 
     try {
-        const [result] = await db.execute(
-            'INSERT INTO announcements (title, content, lecturer_id) VALUES (?, ?, ?)',
-            [title, content, lecturer_id || null]
-        );
+        let resolvedLecturerId = lecturerIdentifier || null;
+
+        // Resolve lecturer employee number/username string to database numeric ID if necessary
+        if (resolvedLecturerId && isNaN(resolvedLecturerId)) {
+            const [lecturerRows] = await db.execute(
+                'SELECT id FROM lecturers WHERE employee_number = ? OR email = ?',
+                [resolvedLecturerId, resolvedLecturerId]
+            );
+
+            if (lecturerRows.length > 0) {
+                resolvedLecturerId = lecturerRows[0].id;
+            } else {
+                resolvedLecturerId = null; // Fallback to null if not found
+            }
+        }
+
+        // Support offline-first Room database sync via upsert logic if an ID is present
+        const query = id ?
+            `INSERT INTO announcements (id, title, content, lecturer_id)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), lecturer_id = VALUES(lecturer_id)` :
+            `INSERT INTO announcements (title, content, lecturer_id)
+             VALUES (?, ?, ?)`;
+
+        const params = id ?
+            [id, title, content, resolvedLecturerId] :
+            [title, content, resolvedLecturerId];
+
+        const [result] = await db.execute(query, params);
 
         res.status(201).json({
-            message: 'Announcement posted successfully',
-            announcementId: result.insertId
+            message: 'Announcement posted/synced successfully',
+            announcementId: result.insertId || id
         });
     } catch (error) {
         console.error('Error creating announcement:', error);

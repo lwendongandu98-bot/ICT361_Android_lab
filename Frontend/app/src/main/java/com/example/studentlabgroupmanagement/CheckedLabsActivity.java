@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +28,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CheckedLabsActivity extends AppCompatActivity {
 
@@ -62,7 +68,47 @@ public class CheckedLabsActivity extends AppCompatActivity {
             btnBackToPending.setOnClickListener(v -> finish());
         }
 
-        loadCheckedLabs();
+        syncAndLoadCheckedLabs();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        syncAndLoadCheckedLabs();
+    }
+
+    private void syncAndLoadCheckedLabs() {
+        // 1. Silently pull latest submissions from backend server
+        RetrofitClient.getApiService().getAllSubmissions().enqueue(new Callback<List<SubmissionEntity>>() {
+            @Override
+            public void onResponse(Call<List<SubmissionEntity>> call, Response<List<SubmissionEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<SubmissionEntity> serverSubmissions = response.body();
+
+                    // 2. Cache fetched submissions into local Room database
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (SubmissionEntity sub : serverSubmissions) {
+                            try {
+                                db.submissionDao().insertSubmission(sub);
+                            } catch (Exception e) {
+                                Log.w("CheckedLabsSync", "Submission already exists or update skipped: " + sub.getId());
+                            }
+                        }
+                        // 3. Render checked labs UI from local database
+                        loadCheckedLabs();
+                    }).start();
+                } else {
+                    loadCheckedLabs();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<SubmissionEntity>> call, Throwable t) {
+                Log.w("CheckedLabsSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+                loadCheckedLabs();
+            }
+        });
     }
 
     private void loadCheckedLabs() {

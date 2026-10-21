@@ -3,6 +3,7 @@ package com.example.studentlabgroupmanagement;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +26,7 @@ import androidx.work.WorkManager;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.worker.DataSyncWorker;
 
 import java.io.File;
@@ -32,6 +34,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LabsActivity extends AppCompatActivity {
 
@@ -103,7 +109,47 @@ public class LabsActivity extends AppCompatActivity {
         btnSaveDraft.setOnClickListener(v -> saveOrUpdateLab("DRAFT"));
         btnPublishLab.setOnClickListener(v -> saveOrUpdateLab("PUBLISHED"));
 
-        loadLabs();
+        syncAndLoadLabs();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        syncAndLoadLabs();
+    }
+
+    private void syncAndLoadLabs() {
+        // 1. Silently pull latest labs from the Node.js backend server
+        RetrofitClient.getApiService().getAllLabs().enqueue(new Callback<List<LabEntity>>() {
+            @Override
+            public void onResponse(Call<List<LabEntity>> call, Response<List<LabEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<LabEntity> serverLabs = response.body();
+
+                    // 2. Save fetched labs into local Room database for offline access
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (LabEntity lab : serverLabs) {
+                            try {
+                                db.labDao().insertLab(lab);
+                            } catch (Exception e) {
+                                Log.w("LabSync", "Lab already exists or update skipped: " + lab.getTitle());
+                            }
+                        }
+                        // 3. Refresh UI from local database
+                        loadLabs();
+                    }).start();
+                } else {
+                    loadLabs();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<LabEntity>> call, Throwable t) {
+                Log.w("LabSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+                loadLabs();
+            }
+        });
     }
 
     private void triggerSyncWorker() {
@@ -151,7 +197,7 @@ public class LabsActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         Toast.makeText(this, "Lab saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                         clearFields();
-                        loadLabs();
+                        syncAndLoadLabs();
                     });
                 }
             } else {
@@ -163,7 +209,7 @@ public class LabsActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Lab saved locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                     clearFields();
-                    loadLabs();
+                    syncAndLoadLabs();
                 });
             }
         }).start();
@@ -229,7 +275,7 @@ public class LabsActivity extends AppCompatActivity {
                                     triggerSyncWorker();
                                     runOnUiThread(() -> {
                                         Toast.makeText(LabsActivity.this, "Lab published locally! Will sync when online.", Toast.LENGTH_SHORT).show();
-                                        loadLabs();
+                                        syncAndLoadLabs();
                                     });
                                 }).start();
                             });
@@ -241,10 +287,11 @@ public class LabsActivity extends AppCompatActivity {
                             new Thread(() -> {
                                 AppDatabase.getInstance(getApplicationContext()).labDao().deleteLabById(labId);
                                 triggerSyncWorker();
+                                suppressSyncToastOrRefresh:
                                 runOnUiThread(() -> {
                                     Toast.makeText(LabsActivity.this, "Lab deleted locally! Will sync when online.", Toast.LENGTH_SHORT).show();
                                     if (editingLabId == labId) clearFields();
-                                    loadLabs();
+                                    syncAndLoadLabs();
                                 });
                             }).start();
                         });

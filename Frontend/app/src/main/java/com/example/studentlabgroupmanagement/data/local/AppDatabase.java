@@ -12,6 +12,7 @@ import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.OperationEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntity;
+import com.example.studentlabgroupmanagement.data.local.entity.LecturerEntity;
 
 import com.example.studentlabgroupmanagement.data.local.dao.StudentDao;
 import com.example.studentlabgroupmanagement.data.local.dao.CourseDao;
@@ -20,6 +21,7 @@ import com.example.studentlabgroupmanagement.data.local.dao.LabDao;
 import com.example.studentlabgroupmanagement.data.local.dao.SubmissionDao;
 import com.example.studentlabgroupmanagement.data.local.dao.OperationDao;
 import com.example.studentlabgroupmanagement.data.local.dao.AnnouncementDao;
+import com.example.studentlabgroupmanagement.data.local.dao.LecturerDao;
 
 @Database(entities = {
         StudentEntity.class,
@@ -28,8 +30,9 @@ import com.example.studentlabgroupmanagement.data.local.dao.AnnouncementDao;
         LabEntity.class,
         SubmissionEntity.class,
         OperationEntity.class,
-        AnnouncementEntity.class
-}, version = 2, exportSchema = false)
+        AnnouncementEntity.class,
+        LecturerEntity.class
+}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract StudentDao studentDao();
@@ -39,6 +42,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SubmissionDao submissionDao();
     public abstract OperationDao operationDao();
     public abstract AnnouncementDao announcementDao();
+    public abstract LecturerDao lecturerDao();
 
     private static volatile AppDatabase INSTANCE;
 

@@ -4,7 +4,8 @@ exports.createLab = async (req, res) => {
     const title = req.body.title;
     const description = req.body.description;
     const due_date = req.body.due_date || req.body.dueDate;
-    const file_path = req.body.file_path || req.body.filePath;
+    // Accept multiple naming conventions for file path/url consistency
+    const file_path = req.body.file_path || req.body.filePath || req.body.file_url || req.body.fileUrl;
     const status = req.body.status;
 
     if (!title || !due_date) {
@@ -39,17 +40,33 @@ exports.getAllLabs = async (req, res) => {
 
 exports.submitLab = async (req, res) => {
     const lab_id = req.body.lab_id || req.body.labId;
-    const student_id = req.body.student_id || req.body.studentId || req.body.studentNumber;
-    const file_path = req.body.file_path || req.body.filePath;
+    const studentIdentifier = req.body.student_id || req.body.studentId || req.body.studentNumber;
+    const file_path = req.body.file_path || req.body.filePath || req.body.file_url || req.body.fileUrl;
 
-    if (!lab_id || !student_id || !file_path) {
-        return res.status(400).json({ message: 'lab_id, student_id, and file_path are required' });
+    if (!lab_id || !studentIdentifier || !file_path) {
+        return res.status(400).json({ message: 'lab_id, student_id (or studentNumber), and file_path are required' });
     }
 
     try {
+        let resolvedStudentId = studentIdentifier;
+
+        // If the Android app passed a student number string instead of a numeric ID, resolve it safely
+        if (isNaN(studentIdentifier)) {
+            const [studentRows] = await db.execute(
+                'SELECT id FROM students WHERE student_number = ? OR username = ?',
+                [studentIdentifier, studentIdentifier]
+            );
+
+            if (studentRows.length > 0) {
+                resolvedStudentId = studentRows[0].id;
+            } else {
+                return res.status(404).json({ message: 'Student record not found for the provided identifier' });
+            }
+        }
+
         const [result] = await db.execute(
             'INSERT INTO submissions (lab_id, student_id, file_path, status) VALUES (?, ?, ?, ?)',
-            [lab_id, student_id, file_path, 'PENDING']
+            [lab_id, resolvedStudentId, file_path, 'PENDING']
         );
 
         res.status(201).json({

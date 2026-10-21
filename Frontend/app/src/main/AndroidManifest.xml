@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ADDED: Required for Retrofit backend synchronization -->
+    <!-- Required for Retrofit backend synchronization -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -143,6 +143,12 @@
             android:name=".TermsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-    </application>
 
+        <!-- Newly added Submit Lab Activity -->
+        <activity
+            android:name=".SubmitLabActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+    </application>
 </manifest>

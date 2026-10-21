@@ -1,23 +1,51 @@
 package com.example.studentlabgroupmanagement.data.local.entity;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
+@Keep
 @Entity(tableName = "users")
 public class StudentEntity {
+
     @PrimaryKey
     @NonNull
+    @Keep
+    @SerializedName(value = "username", alternate = {"user_name"})
     private String username;
+
+    @Keep
+    @SerializedName(value = "name", alternate = {"full_name", "fullname"})
     private String name;
+
+    @Keep
+    @SerializedName(value = "studentNum", alternate = {"student_number", "studentnumber", "student_no", "studentNo"})
     private String studentNum;
+
+    @Keep
+    @SerializedName(value = "email", alternate = {"email_address", "mail"})
     private String email;
+
+    @Keep
+    @SerializedName(value = "password", alternate = {"pass", "pwd", "password_hash"})
     private String password;
+
+    @Keep
+    @SerializedName(value = "program", alternate = {"course", "course_name"})
     private String program;
+
+    @Keep
+    @SerializedName(value = "labGroup", alternate = {"lab_group", "labgroup", "group_name"})
     private String labGroup;
+
+    @Keep
+    @SerializedName(value = "role", alternate = {"user_role", "user_type"})
     private String role;
 
-    // Default constructor required by Room
+    // Default constructor required by Room and Gson
     public StudentEntity() {}
 
     public StudentEntity(@NonNull String username, String name, String studentNum, String email,

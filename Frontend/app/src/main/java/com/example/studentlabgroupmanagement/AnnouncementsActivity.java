@@ -2,6 +2,7 @@ package com.example.studentlabgroupmanagement;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -14,7 +15,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.AnnouncementEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.repository.GroupRepository;
 import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 import com.example.studentlabgroupmanagement.ui.viewmodel.AnnouncementsViewModel;
@@ -22,7 +25,12 @@ import com.example.studentlabgroupmanagement.ui.viewmodel.AnnouncementsViewModel
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AnnouncementsActivity extends AppCompatActivity {
 
@@ -86,6 +94,46 @@ public class AnnouncementsActivity extends AppCompatActivity {
                 rvAnnouncements.setAdapter(announcementAdapter);
             }
         });
+
+        // Pull latest announcements from backend on startup
+        syncAndLoadAnnouncements();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Sync whenever the activity comes back into focus
+        syncAndLoadAnnouncements();
+    }
+
+    private void syncAndLoadAnnouncements() {
+        // 1. Silently pull latest announcements from the Node.js backend server
+        RetrofitClient.getApiService().getAllAnnouncements().enqueue(new Callback<List<AnnouncementEntity>>() {
+            @Override
+            public void onResponse(Call<List<AnnouncementEntity>> call, Response<List<AnnouncementEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<AnnouncementEntity> serverAnnouncements = response.body();
+
+                    // 2. Save fetched announcements into local Room database in the background for offline access
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (AnnouncementEntity announcement : serverAnnouncements) {
+                            try {
+                                db.announcementDao().insertAnnouncement(announcement);
+                            } catch (Exception e) {
+                                Log.w("AnnouncementSync", "Announcement already exists or update skipped: " + announcement.getTitle());
+                            }
+                        }
+                    }).start();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AnnouncementEntity>> call, Throwable t) {
+                // Offline fallback: LiveData will still display whatever is locally cached in Room
+                Log.w("AnnouncementSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+            }
+        });
     }
 
     private void postAnnouncement() {
@@ -112,6 +160,7 @@ public class AnnouncementsActivity extends AppCompatActivity {
                     Toast.makeText(AnnouncementsActivity.this, message, Toast.LENGTH_SHORT).show();
                     etTitle.setText("");
                     etMessage.setText("");
+                    syncAndLoadAnnouncements(); // Refresh after posting
                 });
             }
 

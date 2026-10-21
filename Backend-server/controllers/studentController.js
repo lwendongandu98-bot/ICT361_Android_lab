@@ -1,7 +1,7 @@
 const db = require('../config/db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs'); // Standardized to bcryptjs for consistency
 
-// Create or sync a Student
+// Create or sync a Student (Safely handles duplicates without crashing background sync)
 exports.createStudent = async (req, res) => {
     console.log("========== STUDENT SYNC REQUEST ==========");
     console.log(req.body);
@@ -13,6 +13,7 @@ exports.createStudent = async (req, res) => {
     const password = req.body.password;
     const program = req.body.program;
     const lab_group_id = req.body.lab_group_id || req.body.labGroupId || req.body.groupId;
+    const role = req.body.role || 'Student';
 
     if (!username || !password || !student_number || !email) {
         return res.status(400).json({
@@ -23,31 +24,56 @@ exports.createStudent = async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const [result] = await db.execute(
-            `INSERT INTO students
-            (full_name, username, student_number, email, password, program, lab_group_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-            full_name = VALUES(full_name),
-            email = VALUES(email),
-            program = VALUES(program)`,
-            [
-                full_name || '',
-                username,
-                student_number,
-                email,
-                hashedPassword,
-                program || '',
-                lab_group_id || null
-            ]
+        // Check if student already exists by email, username, or student_number
+        const [existingStudents] = await db.execute(
+            `SELECT id FROM students WHERE email = ? OR username = ? OR student_number = ?`,
+            [email, username, student_number]
         );
 
-        console.log("Student synced successfully:", username);
+        let studentId;
 
-        res.status(201).json({
+        if (existingStudents.length > 0) {
+            // Student exists: Update their record safely
+            studentId = existingStudents[0].id;
+            await db.execute(
+                `UPDATE students
+                 SET full_name = ?, username = ?, student_number = ?, email = ?, password = ?, program = ?, lab_group_id = ?
+                 WHERE id = ?`,
+                [
+                    full_name || '',
+                    username,
+                    student_number,
+                    email,
+                    hashedPassword,
+                    program || '',
+                    lab_group_id || null,
+                    studentId
+                ]
+            );
+            console.log("Student updated successfully:", username);
+        } else {
+            // Student does not exist: Insert new record
+            const [result] = await db.execute(
+                `INSERT INTO students (full_name, username, student_number, email, password, program, lab_group_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    full_name || '',
+                    username,
+                    student_number,
+                    email,
+                    hashedPassword,
+                    program || '',
+                    lab_group_id || null
+                ]
+            );
+            studentId = result.insertId;
+            console.log("Student inserted successfully:", username);
+        }
+
+        res.status(200).json({
             success: true,
             message: 'Student registered/synced successfully',
-            studentId: result.insertId || null
+            studentId: studentId
         });
 
     } catch (error) {
@@ -147,7 +173,16 @@ exports.searchStudents = async (req, res) => {
 
     try {
         let query = `
-            SELECT s.id, s.student_number, s.full_name, s.username, s.program, g.group_name
+            SELECT
+                s.id,
+                s.username,
+                s.full_name AS name,
+                s.student_number AS studentNum,
+                s.email,
+                s.password,
+                s.program,
+                g.group_name AS labGroup,
+                'Student' AS role
             FROM students s
             LEFT JOIN lab_groups g ON s.lab_group_id = g.id
             WHERE 1=1
@@ -187,7 +222,16 @@ exports.searchStudents = async (req, res) => {
 exports.getAllStudents = async (req, res) => {
     try {
         const [students] = await db.execute(`
-            SELECT s.id, s.student_number, s.full_name, s.username, s.program, g.group_name
+            SELECT
+                s.id,
+                s.username,
+                s.full_name AS name,
+                s.student_number AS studentNum,
+                s.email,
+                s.password,
+                s.program,
+                COALESCE(g.group_name, 'Unassigned') AS labGroup,
+                'Student' AS role
             FROM students s
             LEFT JOIN lab_groups g ON s.lab_group_id = g.id
         `);

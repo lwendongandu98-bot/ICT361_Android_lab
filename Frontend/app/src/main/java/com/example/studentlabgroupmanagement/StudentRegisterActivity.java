@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,12 +19,15 @@ import com.example.studentlabgroupmanagement.data.local.entity.CourseEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.OperationEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import retrofit2.Response;
 
 public class StudentRegisterActivity extends AppCompatActivity {
 
@@ -60,13 +64,41 @@ public class StudentRegisterActivity extends AppCompatActivity {
     private void loadSpinnersData() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+
+            try {
+                Response<List<LabGroupEntity>> groupResponse = RetrofitClient.getApiService().getAllGroups().execute();
+                if (groupResponse.isSuccessful() && groupResponse.body() != null) {
+                    for (LabGroupEntity g : groupResponse.body()) {
+                        try {
+                            db.labGroupDao().insertGroup(g);
+                        } catch (Exception ignored) {}
+                    }
+                }
+
+                Response<List<CourseEntity>> courseResponse = RetrofitClient.getApiService().getAllCourses().execute();
+                if (courseResponse.isSuccessful() && courseResponse.body() != null) {
+                    for (CourseEntity c : courseResponse.body()) {
+                        try {
+                            db.courseDao().insertCourse(c);
+                        } catch (Exception ignored) {}
+                    }
+                }
+            } catch (Exception e) {
+                Log.w("StudentRegister", "Network sync failed, falling back to local cache: " + e.getMessage());
+            }
+
             List<CourseEntity> courses = db.courseDao().getAllCoursesSync();
             List<LabGroupEntity> groups = db.labGroupDao().getAllGroupsSync();
 
             List<String> courseList = new ArrayList<>();
             if (courses != null) {
                 for (CourseEntity c : courses) {
-                    if (c.getCourseName() != null) courseList.add(c.getCourseName());
+                    if (c.getCourseName() != null) {
+                        String displayStr = (c.getCourseCode() != null && !c.getCourseCode().isEmpty())
+                                ? c.getCourseCode() + " - " + c.getCourseName()
+                                : c.getCourseName();
+                        courseList.add(displayStr);
+                    }
                 }
             }
             if (courseList.isEmpty()) {
@@ -132,15 +164,17 @@ public class StudentRegisterActivity extends AppCompatActivity {
 
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            StudentEntity existing = db.studentDao().getStudentById(username);
+            StudentEntity existing = db.studentDao().getStudentByIdentifier(username);
 
             if (existing != null) {
-                runOnUiThread(() -> Toast.makeText(this, "Registration failed. Username may already be taken.", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, "Registration failed. Username or account already exists.", Toast.LENGTH_SHORT).show());
             } else {
-                StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, password, selectedProgram, selectedGroup, "Student");
+                // Hash password with SHA-256 so local Room login matches LoginActivity
+                String hashedPassword = hashPassword(password);
+
+                StudentEntity newStudent = new StudentEntity(username, name, studentNum, email, hashedPassword, selectedProgram, selectedGroup, "Student");
                 db.studentDao().insertStudent(newStudent);
 
-                // --- QUEUE OPERATION FOR BACKGROUND SYNCING ---
                 Gson gson = new Gson();
                 String payload = gson.toJson(newStudent);
                 String operationId = UUID.randomUUID().toString();
@@ -155,15 +189,13 @@ public class StudentRegisterActivity extends AppCompatActivity {
                         System.currentTimeMillis()
                 );
                 db.operationDao().insertOperation(operation);
-                // ----------------------------------------------
 
-                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
                 SyncHelper.triggerSync(this);
-                // --------------------------------------------------
 
                 runOnUiThread(() -> {
                     SessionManager sessionManager = new SessionManager(this);
-                    sessionManager.createLoginSession(username, "Student");
+                    // Populate comprehensive session data
+                    sessionManager.createLoginSession(username, studentNum, email, name, "Student");
 
                     SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
@@ -179,5 +211,22 @@ public class StudentRegisterActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    // Helper method to hash passwords using SHA-256 for local Room compatibility
+    private String hashPassword(String password) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes("UTF-8"));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

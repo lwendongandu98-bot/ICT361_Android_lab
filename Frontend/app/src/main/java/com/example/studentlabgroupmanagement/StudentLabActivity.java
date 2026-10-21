@@ -3,6 +3,7 @@ package com.example.studentlabgroupmanagement;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabEntity;
 import com.example.studentlabgroupmanagement.data.local.entity.SubmissionEntity;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
 import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
 
 import java.io.File;
@@ -32,11 +34,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class StudentLabActivity extends AppCompatActivity {
 
     private LinearLayout containerLecturerLabs;
     private TextView tvNoLecturerLabs;
-    private LinearLayout toolbarStudentLabs; // Corrected type to LinearLayout
+    private LinearLayout toolbarStudentLabs;
     private int selectedLabIdForSubmission = -1;
     private SessionManager sessionManager;
 
@@ -62,21 +68,53 @@ public class StudentLabActivity extends AppCompatActivity {
         if (toolbarStudentLabs != null) {
             ViewCompat.setOnApplyWindowInsetsListener(toolbarStudentLabs, (v, windowInsets) -> {
                 int statusBarHeight = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-
-                // Set top padding to the height of the status bar so content doesn't clip,
-                // while the background color stretches to the absolute top edge!
                 v.setPadding(v.getPaddingLeft(), statusBarHeight + 8, v.getPaddingRight(), v.getPaddingBottom());
-
                 return windowInsets;
             });
         }
-        // ------------------------------------------------
 
-        // --- CHECK SERVER CONNECTION ON STARTUP ---
-        NetworkCheckHelper.checkConnection(this);
-        // ------------------------------------------
-
+        // 1. INSTANT LOAD: Display cached labs immediately from local Room DB with zero lag
         loadLecturerPublishedLabs();
+
+        // 2. BACKGROUND SYNC: Silently check server for updates without blocking UI
+        syncLabsInBackground();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh local view safely without forcing network blocks on resume
+        loadLecturerPublishedLabs();
+    }
+
+    private void syncLabsInBackground() {
+        RetrofitClient.getApiService().getAllLabs().enqueue(new Callback<List<LabEntity>>() {
+            @Override
+            public void onResponse(Call<List<LabEntity>> call, Response<List<LabEntity>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<LabEntity> serverLabs = response.body();
+
+                    // Save to Room on background thread, then update UI cache
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (LabEntity lab : serverLabs) {
+                            try {
+                                db.labDao().insertLab(lab);
+                            } catch (Exception e) {
+                                Log.w("StudentLabSync", "Lab sync cache note: " + e.getMessage());
+                            }
+                        }
+                        // Refresh UI with freshly synced server data
+                        loadLecturerPublishedLabs();
+                    }).start();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<LabEntity>> call, Throwable t) {
+                Log.w("StudentLabSync", "Offline mode active: utilizing cached local labs.");
+            }
+        });
     }
 
     private void confirmAndSubmitFile(Uri uri) {
@@ -115,9 +153,9 @@ public class StudentLabActivity extends AppCompatActivity {
 
                 AppDatabase.getInstance(getApplicationContext()).submissionDao().insertSubmission(submission);
 
-                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
+                // --- TRIGGER BACKGROUND SYNC WORKER ---
                 SyncHelper.triggerSync(this);
-                // --------------------------------------------------
+                // --------------------------------------
 
                 runOnUiThread(() -> Toast.makeText(this, "Lab work saved locally! Will sync when online.", Toast.LENGTH_SHORT).show());
             }).start();

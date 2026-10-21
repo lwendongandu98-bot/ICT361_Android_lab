@@ -18,11 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.studentlabgroupmanagement.data.local.AppDatabase;
 import com.example.studentlabgroupmanagement.data.local.entity.LabGroupEntity;
 import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
-import com.example.studentlabgroupmanagement.data.worker.SyncHelper;
+import com.example.studentlabgroupmanagement.data.repository.GroupRepository;
+import com.example.studentlabgroupmanagement.ui.viewmodel.GroupsViewModel;
 
 import java.util.List;
 
@@ -37,11 +39,15 @@ public class GroupsActivity extends AppCompatActivity {
     private LinearLayout groupsContainer;
     private Toolbar toolbarGroups;
     private String filterQuery = "";
+    private GroupsViewModel groupsViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_groups);
+
+        // Initialize ViewModel for API & Database operations
+        groupsViewModel = new ViewModelProvider(this).get(GroupsViewModel.class);
 
         // Bind layout views
         etGroupName = findViewById(R.id.etGroupName);
@@ -85,55 +91,72 @@ public class GroupsActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // --- RETROFIT CONNECTION TEST ---
-        testServerConnection();
-
-        loadGroupsFromDatabase();
+        // Fetch latest server groups and sync into local Room on startup
+        syncAndLoadGroups();
     }
 
-    private void testServerConnection() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Also sync whenever the activity comes back into focus
+        syncAndLoadGroups();
+    }
+
+    private void syncAndLoadGroups() {
+        // 1. Silently pull latest groups from the Node.js backend server
         RetrofitClient.getApiService().getAllGroups().enqueue(new Callback<List<LabGroupEntity>>() {
             @Override
             public void onResponse(Call<List<LabGroupEntity>> call, Response<List<LabGroupEntity>> response) {
-                if (response.isSuccessful()) {
-                    Log.d("RETROFIT_TEST", "Success! Connected to Node.js server. Groups received: " + (response.body() != null ? response.body().size() : 0));
-                    Toast.makeText(GroupsActivity.this, "Server connected successfully!", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful() && response.body() != null) {
+                    List<LabGroupEntity> serverGroups = response.body();
+
+                    // 2. Save fetched groups into local Room database in the background for offline access
+                    new Thread(() -> {
+                        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                        for (LabGroupEntity group : serverGroups) {
+                            try {
+                                db.labGroupDao().insertGroup(group);
+                            } catch (Exception e) {
+                                Log.w("GroupsSync", "Group already exists or update skipped: " + group.getGroupName());
+                            }
+                        }
+                        // 3. Refresh UI from local database once synced
+                        loadGroupsFromDatabase();
+                    }).start();
                 } else {
-                    Log.d("RETROFIT_TEST", "Server returned error code: " + response.code());
-                    Toast.makeText(GroupsActivity.this, "Server error: " + response.code(), Toast.LENGTH_SHORT).show();
+                    // Fallback to local database if server response code isn't successful
+                    loadGroupsFromDatabase();
                 }
             }
 
             @Override
             public void onFailure(Call<List<LabGroupEntity>> call, Throwable t) {
-                Log.e("RETROFIT_TEST", "Connection failed: " + t.getMessage(), t);
-                Toast.makeText(GroupsActivity.this, "Connection failed! Check IP/Wi-Fi", Toast.LENGTH_SHORT).show();
+                // Offline fallback: load whatever is already cached locally
+                Log.w("GroupsSync", "Offline mode: Sync skipped, loading local cache. Error: " + t.getMessage());
+                loadGroupsFromDatabase();
             }
         });
     }
 
     private void createNewLabGroup(String name) {
-        new Thread(() -> {
-            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            LabGroupEntity existing = db.labGroupDao().getGroupByName(name);
-
-            if (existing != null) {
-                runOnUiThread(() -> Toast.makeText(this, "Group already exists!", Toast.LENGTH_SHORT).show());
-            } else {
-                LabGroupEntity newGroup = new LabGroupEntity(name, 15);
-                db.labGroupDao().insertGroup(newGroup);
-
-                // --- TRIGGER UNIFIED WORKMANAGER BACKGROUND SYNC ---
-                SyncHelper.triggerSync(this);
-                // --------------------------------------------------
-
+        // Route group creation through ViewModel & Repository for MySQL synchronization
+        groupsViewModel.createGroup(name, 15, new GroupRepository.OnOperationCallback() {
+            @Override
+            public void onSuccess(String message) {
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Group created & sync scheduled!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupsActivity.this, message, Toast.LENGTH_SHORT).show();
                     etGroupName.setText("");
-                    loadGroupsFromDatabase();
+                    syncAndLoadGroups(); // Sync again to reflect newly created group instantly
                 });
             }
-        }).start();
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(GroupsActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void loadGroupsFromDatabase() {
@@ -178,7 +201,7 @@ public class GroupsActivity extends AppCompatActivity {
                                         db.labGroupDao().deleteGroupByName(name);
                                         runOnUiThread(() -> {
                                             Toast.makeText(GroupsActivity.this, "Group deleted successfully", Toast.LENGTH_SHORT).show();
-                                            loadGroupsFromDatabase();
+                                            syncAndLoadGroups();
                                         });
                                     }).start();
                                 })

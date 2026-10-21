@@ -3,14 +3,26 @@ package com.example.studentlabgroupmanagement.data.local.entity;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 @Entity(tableName = "labs")
 public class LabEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @SerializedName(value = "title", alternate = {"labTitle", "name"})
     private String title;
+
+    @SerializedName(value = "description", alternate = {"desc", "labDescription"})
     private String description;
+
+    @SerializedName(value = "due_date", alternate = {"dueDate", "deadline"})
     private String dueDate;
+
+    @SerializedName(value = "file_path", alternate = {"filePath", "file"})
     private String filePath;
+
+    @SerializedName(value = "status", alternate = {"labStatus"})
     private String status;
 
     // Default constructor required by Room
