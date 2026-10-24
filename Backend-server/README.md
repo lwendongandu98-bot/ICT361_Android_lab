@@ -1,0 +1,12 @@
+# ICT361 Backend Server Setup
+
+This directory contains the Node.js/Express REST API and database integration for the ICT361 project.
+
+## Directory Structure
+- `src/` — API routes, controllers, and models.
+- `config/` — Database connection configurations (MySQL/PostgreSQL).
+
+## Getting Started
+1. Run `npm install` inside this directory to install required dependencies.
+2. Configure your local environment variables in a `.env` file (do not commit `.env` to Git).
+3. Run `npm start` or `npm run dev` to launch the server.

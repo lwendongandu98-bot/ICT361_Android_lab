@@ -1,0 +1,34 @@
+# Environment variables (contains sensitive DB passwords and secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependency folders (large installed packages, do not push to GitHub)
+node_modules/
+jspm_packages/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE & OS specific files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
