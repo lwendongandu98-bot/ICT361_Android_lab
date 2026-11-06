@@ -18,14 +18,14 @@ public interface StudentDao {
     @Update
     void updateStudent(StudentEntity student);
 
-    @Query("SELECT * FROM users WHERE username = :username")
+    @Query("SELECT * FROM users WHERE username = :username OR name = :username")
     StudentEntity getStudentById(String username);
 
-    // FIXED: Using exact entity column names (studentNum and email)
-    @Query("SELECT * FROM users WHERE username = :identifier OR email = :identifier OR studentNum = :identifier LIMIT 1")
+    // FIXED: Added 'OR name = :identifier' so it matches names like "bob" as well as usernames/student numbers
+    @Query("SELECT * FROM users WHERE username = :identifier OR email = :identifier OR studentNum = :identifier OR name = :identifier LIMIT 1")
     StudentEntity getStudentByIdentifier(String identifier);
 
-    @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
+    @Query("SELECT * FROM users WHERE username = :username OR name = :username LIMIT 1")
     LiveData<StudentEntity> getStudentLiveById(String username);
 
     @Query("SELECT * FROM users")
@@ -40,10 +40,10 @@ public interface StudentDao {
     @Query("SELECT COUNT(*) FROM users WHERE labGroup = :groupName AND role = 'Student'")
     int getStudentCountByGroup(String groupName);
 
-    @Query("UPDATE users SET labGroup = :groupName WHERE username = :username")
+    @Query("UPDATE users SET labGroup = :groupName WHERE username = :username OR name = :username")
     void updateStudentGroup(String username, String groupName);
 
-    @Query("DELETE FROM users WHERE username = :username")
+    @Query("DELETE FROM users WHERE username = :username OR name = :username")
     void deleteUserByUsername(String username);
 
     @Query("UPDATE users SET labGroup = :newName WHERE labGroup = :oldName")

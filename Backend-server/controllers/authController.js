@@ -106,31 +106,54 @@ exports.registerLecturer = async (req, res) => {
     }
 };
 
-// Login Account (Checks both Students and Lecturers)
+// Login Account (Checks both Students and Lecturers with diagnostic logs)
 exports.login = async (req, res) => {
-    const { username, password } = req.body;
+    console.log("========== LOGIN ATTEMPT RECEIVED ==========");
+    console.log("Full req.body received from Android:", req.body);
 
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username/Employee number and password are required' });
+    const rawUsername = req.body.username || req.body.email || req.body.student_number || req.body.studentNumber || req.body.employee_number;
+    const password = req.body.password;
+
+    console.log("Extracted rawUsername/identifier:", rawUsername);
+    console.log("Password provided length:", password ? password.length : 0);
+
+    if (!rawUsername || !password) {
+        console.error("Login validation failed: Missing username or password");
+        return res.status(400).json({ message: 'Username/Student Number and password are required' });
     }
+
+    const username = String(rawUsername).trim();
 
     try {
         let user = null;
         let role = '';
 
+        // Flexible student lookup across username, student_number, email, or full_name with trimming
         const [studentRows] = await db.execute(
-            'SELECT * FROM students WHERE username = ? OR student_number = ?',
-            [username, username]
+            `SELECT * FROM students
+             WHERE TRIM(username) = ?
+                OR TRIM(student_number) = ?
+                OR TRIM(email) = ?
+                OR TRIM(full_name) = ?`,
+            [username, username, username, username]
         );
+
+        console.log("Student rows found in DB:", studentRows.length);
 
         if (studentRows.length > 0) {
             user = studentRows[0];
             role = 'Student';
         } else {
+            // Flexible lecturer lookup
             const [lecturerRows] = await db.execute(
-                'SELECT * FROM lecturers WHERE employee_number = ? OR email = ?',
-                [username, username]
+                `SELECT * FROM lecturers
+                 WHERE TRIM(employee_number) = ?
+                    OR TRIM(email) = ?
+                    OR TRIM(full_name) = ?`,
+                [username, username, username]
             );
+
+            console.log("Lecturer rows found in DB:", lecturerRows.length);
 
             if (lecturerRows.length > 0) {
                 user = lecturerRows[0];
@@ -139,17 +162,22 @@ exports.login = async (req, res) => {
         }
 
         if (!user) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            console.log("Login failed: User not found for identifier:", username);
+            return res.status(401).json({ message: 'Invalid credentials or user does not exist' });
         }
 
-        // Android's offline-first queue may sync a SHA-256 client hash; support
-        // that format as well as accounts registered with a raw password.
+        console.log("User found in database with ID:", user.id, "Role:", role);
+
+        // Android's offline-first queue support for SHA-256 vs direct bcrypt match
         const sha256Password = crypto.createHash('sha256').update(password, 'utf8').digest('hex');
         const directMatch = await bcrypt.compare(password, user.password);
         const queuedHashMatch = directMatch ? false : await bcrypt.compare(sha256Password, user.password);
         const isMatch = directMatch || queuedHashMatch;
 
+        console.log("Password check results -> Direct match:", directMatch, "Queued hash match:", queuedHashMatch);
+
         if (!isMatch) {
+            console.log("Login failed: Password mismatch for user:", username);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
@@ -162,16 +190,19 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
+        console.log("Login successful for user:", username);
+
         res.json({
             message: 'Login successful',
             token,
             user: {
                 id: userId,
-                name: user.full_name,
+                name: user.full_name || user.username,
                 role
             }
         });
     } catch (error) {
+        console.error("Login server error:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };

@@ -12,9 +12,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.studentlabgroupmanagement.data.local.AppDatabase;
-import com.example.studentlabgroupmanagement.data.local.entity.LecturerEntity;
-import com.example.studentlabgroupmanagement.data.local.entity.StudentEntity;
+import com.example.studentlabgroupmanagement.data.remote.LoginRequest;
+import com.example.studentlabgroupmanagement.data.remote.LoginResponse;
+import com.example.studentlabgroupmanagement.data.remote.RetrofitClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -48,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // LOGIN BUTTON
+        // LOGIN BUTTON - Authenticates via Retrofit (Node.js backend + MySQL + Bcrypt)
         btnLogin.setOnClickListener(v -> {
             final String inputIdentifier = etUsername.getText().toString().trim();
             final String password = etPassword.getText().toString().trim();
@@ -74,65 +78,38 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            new Thread(() -> {
-                Log.d("LoginDebug", "Attempting login for identifier: '" + inputIdentifier + "' with role: '" + role + "'");
+            Log.d("LoginDebug", "Attempting network login for identifier: '" + inputIdentifier + "' with role: '" + role + "'");
 
-                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                boolean userExists = false;
-                boolean passwordMatch = false;
+            // Create login request payload
+            LoginRequest loginRequest = new LoginRequest(inputIdentifier, password);
 
-                // Hash entered password using SHA-256 to match local Room storage
-                String hashedInputPassword = hashPassword(password);
+            // Execute Retrofit Login Call
+            RetrofitClient.getApiService().loginUser(loginRequest).enqueue(new Callback<LoginResponse>() {
+                @Override
+                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        LoginResponse loginResponse = response.body();
+                        Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
 
-                StudentEntity loggedInStudent = null;
-                LecturerEntity loggedInLecturer = null;
-
-                if (role.equalsIgnoreCase("Student")) {
-                    // Use robust identifier search (matches username, email, or studentNum)
-                    loggedInStudent = db.studentDao().getStudentByIdentifier(inputIdentifier);
-                    if (loggedInStudent != null) {
-                        userExists = true;
-                        passwordMatch = hashedInputPassword.equals(loggedInStudent.getPassword());
-                        Log.d("LoginDebug", "Student found locally.");
-                    }
-                } else {
-                    // Check local Lecturer DAO for offline authentication
-                    loggedInLecturer = db.lecturerDao().getLecturerByEmployeeNo(inputIdentifier);
-                    if (loggedInLecturer != null) {
-                        userExists = true;
-                        passwordMatch = hashedInputPassword.equals(loggedInLecturer.getPassword());
-                        Log.d("LoginDebug", "Lecturer found locally.");
-                    }
-                }
-
-                final boolean isValid = userExists && passwordMatch;
-                final boolean finalUserExists = userExists;
-                final boolean finalPasswordMatch = passwordMatch;
-                final StudentEntity finalStudent = loggedInStudent;
-
-                runOnUiThread(() -> {
-                    if (isValid) {
                         try {
                             if (session != null) {
-                                if (role.equalsIgnoreCase("Student") && finalStudent != null) {
-                                    // Save comprehensive student session details using correct entity getters
-                                    session.createLoginSession(
-                                            finalStudent.getUsername(),
-                                            finalStudent.getStudentNum(),
-                                            finalStudent.getEmail(),
-                                            finalStudent.getName(),
-                                            role
-                                    );
-                                } else {
-                                    session.createLoginSession(inputIdentifier, "", "", inputIdentifier, role);
-                                }
+                                LoginResponse.UserDto user = loginResponse.getUser();
+                                String name = (user != null && user.getName() != null) ? user.getName() : inputIdentifier;
+
+                                // Save comprehensive session details
+                                session.createLoginSession(
+                                        inputIdentifier,
+                                        "",
+                                        "",
+                                        name,
+                                        role
+                                );
                             }
                         } catch (Exception e) {
                             Log.e("LoginActivity", "Session save error: " + e.getMessage());
                         }
 
-                        Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
-
+                        // Navigate based on role
                         if (role.equalsIgnoreCase("Student")) {
                             startActivity(new Intent(LoginActivity.this, StudentHomeActivity.class));
                             finish();
@@ -141,14 +118,16 @@ public class LoginActivity extends AppCompatActivity {
                             finish();
                         }
                     } else {
-                        if (!finalUserExists) {
-                            Toast.makeText(LoginActivity.this, "User does not exist in local database! Try connecting online to sync.", Toast.LENGTH_LONG).show();
-                        } else if (!finalPasswordMatch) {
-                            Toast.makeText(LoginActivity.this, "Incorrect password!", Toast.LENGTH_SHORT).show();
-                        }
+                        Toast.makeText(LoginActivity.this, "Invalid credentials! Please check your username/password.", Toast.LENGTH_LONG).show();
                     }
-                });
-            }).start();
+                }
+
+                @Override
+                public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    Log.e("LoginError", "Network failure: " + t.getMessage());
+                    Toast.makeText(LoginActivity.this, "Network error: Make sure your server is running and reachable.", Toast.LENGTH_LONG).show();
+                }
+            });
         });
 
         if (tvForgotPassword != null) {
@@ -175,23 +154,6 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(new Intent(LoginActivity.this, LecturerRegisterActivity.class));
                 }
             });
-        }
-    }
-
-    // Helper method to hash passwords using SHA-256 for local Room comparison
-    private String hashPassword(String password) {
-        try {
-            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes("UTF-8"));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
         }
     }
 }

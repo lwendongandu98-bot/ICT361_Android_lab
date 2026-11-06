@@ -18,6 +18,10 @@ import retrofit2.http.Path;
 
 public interface ApiService {
 
+    // --- Authentication & Login ---
+    @POST("api/auth/login")
+    Call<LoginResponse> loginUser(@Body LoginRequest loginRequest);
+
     // --- Lab Groups ---
     @GET("api/groups")
     Call<List<LabGroupEntity>> getAllGroups();

@@ -49,13 +49,35 @@ public class DataSyncWorker extends Worker {
                         }
 
                         // Execute network call synchronously inside worker thread
-                        Response<SubmissionEntity> response = apiService.createSubmission(sub).execute();
+                        Response<SubmissionEntity> response =
+                                apiService.createSubmission(sub).execute();
+
+                        Log.d(TAG, "========== SUBMISSION SYNC ==========");
+                        Log.d(TAG, "Submission ID: " + sub.getId());
+                        Log.d(TAG, "Lab ID: " + sub.getLabId());
+                        Log.d(TAG, "Student Number: " + sub.getStudentNumber());
+                        Log.d(TAG, "File Path: " + sub.getFilePath());
+                        Log.d(TAG, "Response Code: " + response.code());
+
                         if (response.isSuccessful()) {
-                            Log.d(TAG, "Successfully synced submission ID: " + sub.getId());
-                        } else if (response.code() == 409 || response.code() == 400) {
-                            Log.d(TAG, "Submission already exists on server");
+
+                            Log.d(TAG, "SUCCESS: Submission uploaded to MySQL");
+
                         } else {
-                            Log.e(TAG, "Server rejected submission, Code: " + response.code());
+
+                            String errorBody = "";
+
+                            try {
+                                errorBody = response.errorBody() != null
+                                        ? response.errorBody().string()
+                                        : "No error body returned";
+                            } catch (Exception ex) {
+                                errorBody = ex.getMessage();
+                            }
+
+                            Log.e(TAG, "FAILED TO UPLOAD");
+                            Log.e(TAG, "Response Code: " + response.code());
+                            Log.e(TAG, "Server Error: " + errorBody);
                         }
 
                         // Brief pause to release SQLite lock contention and keep UI responsive
